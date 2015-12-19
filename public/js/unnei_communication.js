@@ -166,6 +166,9 @@ function timeUp(){
 // メッセージを送る
 function SendMsg(target,msg) {
      socket.emit(target, { value: JSON.stringify(msg) });
+     if (useCloud) {
+        SendMsgCloud(target,msg);
+     }
 }
 // 切断する
 function DisConnect() {

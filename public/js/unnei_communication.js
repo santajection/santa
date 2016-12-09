@@ -1,3 +1,33 @@
+/////////////////////////////////////////////////////
+//  音声
+/////////////////////////////////////////////////////
+
+var obj_bgm = null;
+var bgm_play = new Audio("image/sound/bgm.mp3");
+var bgm_hit = new Audio("image/sound/tonakai_hit.mp3");
+var bgm_goal = new Audio("image/sound/goal.mp3");
+var bgm_yojinobori = new Audio("image/sound/sound02.mp3");
+var bgm_warp = new Audio("image/sound/warp.mp3");
+var bgm_fin = new Audio("image/sound/clear.wav");
+var bgm_start = new Audio("image/sound/start.wav");
+bgm_hit.load();
+bgm_goal.load();
+bgm_yojinobori.load();
+bgm_warp.load();  
+bgm_start.load();
+
+var bgmAudio = {
+  play : bgm_play,
+  hit : bgm_hit,
+  goal : bgm_goal,
+  yojinobori : bgm_yojinobori,
+  warp : bgm_warp,
+  fin : bgm_fin,
+  start : bgm_start
+};
+
+
+
 //////////////////////////////////////////////////////////
 // 通信
 //////////////////////////////////////////////////////////
@@ -33,6 +63,10 @@ socket.on('message', function(msg) {
    if(msg.value){
       try{
          var msgObj = JSON.parse(msg.value);
+
+         // if(msgObj.method.substr(0, 1) != "g"){
+         //  console.log(msgObj);          
+         // }
          switch(msgObj.method){
             case "santa_move":
                var direction = msgObj.options["direction"];
@@ -67,6 +101,42 @@ socket.on('message', function(msg) {
             case "gadget_register_unnei":
                var gadgetNum = msgObj.options["gadget"];
                break;
+
+            // 以下、BGM
+            case "play":
+              bgmAudio[msgObj.name].play();
+              break;
+            case "pause_if_exist":
+
+              if(obj_bgm){
+                  obj_bgm.pause();
+              }
+              break;
+            case "obj_overwrite":
+              obj_bgm = bgmAudio[msgObj.name];
+              obj_bgm.play();
+              break;
+            case "soriAnimation":
+
+              if (msgObj.idx > 5 && obj_bgm != bgm_fin){
+                  // ソリの動き始めで音楽を鳴らす
+                  console.log("soriAnimation");
+                  obj_bgm = bgm_fin;
+                  obj_bgm.pause();
+                  obj_bgm.play();
+                  obj_bgm.animate({volume: 1.0}, 4000);
+              }
+              break;
+            case "readyGo2":
+              obj_bgm.animate({volume: 0}, 1500);
+              setTimeout(function(){
+                  obj_bgm = bgm_play;
+                  obj_bgm.loop = "true";
+                  obj_bgm.currentTime = 0;
+                  obj_bgm.play();
+                  obj_bgm.animate({volume: 1}, 2000);
+              }, 1500);
+              break;
             default:
          }
       } catch (error){

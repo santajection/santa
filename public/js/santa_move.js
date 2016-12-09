@@ -30,19 +30,33 @@ var STATE_CLOSED_AND_MOVE = 6; // 窓は閉まっていてアニメーション�
 var STATE_OPENED = 7; // 窓は相手なくアニメーションも動いていない
 var STATE_CLOSED_AND_FINISHED = 8; // 窓は一回相手もうずっと閉まっている状態
 
-var obj_bgm;
-var bgm_play = new Audio("image/sound/bgm.mp3");
-var bgm_hit = new Audio("image/sound/tonakai_hit.mp3");
-var bgm_goal = new Audio("image/sound/goal.mp3");
-var bgm_yojinobori = new Audio("image/sound/sound02.mp3");
-var bgm_warp = new Audio("image/sound/warp.mp3");
-// var bgm_fin = new Audio("image/sound/fin.mp3");
-var bgm_fin = new Audio("image/sound/clear.wav");
-var bgm_start = new Audio("image/sound/start.wav");
-bgm_hit.load();
-bgm_goal.load();
-bgm_yojinobori.load();
-bgm_warp.load();
+// var BGM_Communication = function(name){
+//     this.name = name;
+// }
+
+// BGM_Communication.prototype.play = function(){
+//     SendMsg("bgm",{name:this.name});
+// }
+// BGM_Communication.prototype.animate = function(attr, value){
+// //        obj_bgm.animate({volume: 1}, 2000);
+//     SendMsg("bgm",{name:this.name});
+// }
+// BGM_Communication.prototype.setValue = function(attr, value){
+//     SendMsg("bgm",{name:this.name, method:attr, arg:value});
+
+// }
+
+
+
+// var obj_bgm;
+// var bgm_play = new BGM_Communication("play");
+// var bgm_hit = new BGM_Communication("hit");
+// var bgm_goal = new BGM_Communication("goal");
+// var bgm_yojinobori = new BGM_Communication("yojinobori");
+// var bgm_warp = new BGM_Communication("warp");
+// // var bgm_fin = new BGM_Communication("");
+// var bgm_fin = new BGM_Communication("fin");
+// var bgm_start = new BGM_Communication("start");
 
 function moveleft(){
     console.log(obj);
@@ -310,7 +324,8 @@ function santa_goal_anime(color){
         santa_goal_sori_ride(color);
     } else {
         if (obj_santa[color].image_id % 3 == 0){
-            bgm_yojinobori.play();
+            SendMsg("unnei",{name:"yojinobori",method:"play"});
+            //bgm_yojinobori.play();
         }
         change_image_src(obj_santa[color], obj_santa[color].image_id);
         obj_santa[color].image_id++;
@@ -338,7 +353,8 @@ function santa_goal_sori_ride(color){
     obj_santa[color].css('z-index', Number($("#sori").css('z-index'))-1);
     console.log("color's z-index" + obj_santa[color].css('z-index'));
     // そりに乗る
-    bgm_goal.play();
+    SendMsg("unnei",{name:"goal",method:"play"});
+    //    bgm_goal.play();
     if (obj_santa[color].image_id == 0){
         // 初期化処理
         obj_santa[color].css("left", 370 + 50 * obj_santa[color].id);
@@ -418,8 +434,9 @@ function santa_hitstop(color){
     // console.log(id);
     // var down_src = "image/down" + id + "/down" + id + ".png";
     obj_santa[color].attr({src:"image/down" + id + "/1.png"});
-    console.log(bgm_hit);
-    bgm_hit.play();
+    //console.log(bgm_hit);
+    SendMsg("unnei",{name:"hit",method:"play"});
+    //    bgm_hit.play();
     hit_animation(color, prev_src);
 }
 
@@ -838,9 +855,11 @@ function init(names,window_pos){
         obj_sori.css("top",0);
         obj_sori.attr("src","image/sleigh1/sleigh.png");
         obj_sori.removeClass("refrect");
-        if(obj_bgm){
-            obj_bgm.pause();
-        }
+
+        SendMsg("unnei",{name:"obj_bgm",method:"pause_if_exist"});
+        // if(obj_bgm){
+        //     obj_bgm.pause();
+        // }
 
         $(document).keydown(function(e) {
             keys[e.keyCode] = true;
@@ -905,9 +924,11 @@ function timeUp(){
     }
     clearInterval(window_timer);
     window_timer = null;
-    if(obj_bgm){
-        obj_bgm.pause();
-    }
+
+    SendMsg("unnei",{name:"obj_bgm",method:"pause_if_exist"});
+    // if(obj_bgm){
+    //     obj_bgm.pause();
+    // }
 
     // ヒット時のアニメーションの完了を待ってワープモーションに移る
     // setTimeout(function(){warp();}, 500);
@@ -1022,10 +1043,10 @@ function warpAnimation2(color){
         setTimeout(function(){warpAnimation2(color);},100);
     } else {
         setTimeout(function(){
-            obj_bgm = bgm_warp;
-            // obj_bgm.load();
-            // obj_bgm.currentTime = 0;
-            obj_bgm.play();
+            SendMsg("unnei",{name:"warp",method:"obj_overwrite"});
+            // obj_bgm = bgm_warp;
+            // obj_bgm.play();
+
             obj_santa[color].animate({top:-1440},2000);
             obj_name[color].animate({top:-1440},2800);
             setTimeout(function(){warpAnimation3(color);},2100);
@@ -1098,14 +1119,16 @@ function soriAnimationStart(){
 function soriAnimation(){
     // ソリの動き始めアニメーションフレームアウトまで
     var idx = obj_sori.image_id;
-    if (idx > 5 && obj_bgm != bgm_fin){
-        // ソリの動き始めで音楽を鳴らす
-        console.log("soriAnimation");
-        obj_bgm = bgm_fin;
-        obj_bgm.pause();
-        obj_bgm.play();
-        obj_bgm.animate({volume: 1.0}, 4000);
-    }
+    SendMsg("unnei",{name:"fin", idx:idx, method:"soriAnimation"});
+
+    // if (idx > 5 && obj_bgm != bgm_fin){
+    //     // ソリの動き始めで音楽を鳴らす
+    //     console.log("soriAnimation");
+    //     obj_bgm = bgm_fin;
+    //     obj_bgm.pause();
+    //     obj_bgm.play();
+    //     obj_bgm.animate({volume: 1.0}, 4000);
+    // }
     if(idx < 32){
         obj_sori.image_id++;
         var left = parseInt(obj_sori.css("left"));
@@ -1372,8 +1395,9 @@ function readyGo(){
     $("#screen_rule").hide();
     $("#screen_ouen").hide();
 
-    obj_bgm = bgm_start;
-    obj_bgm.play();
+    SendMsg("unnei",{name:"start",method:"obj_overwrite"});
+    // obj_bgm = bgm_start;
+    // obj_bgm.play();
     setTimeout(function(){
         // よーい
         $("#screen_yoi").show();
@@ -1393,16 +1417,16 @@ function readyGo2(){
     $("#screen_don").show();
     $("#screen_don").fadeOut(3000);
     //bgm開始
-    // if (!obj_bgm){
-    obj_bgm.animate({volume: 0}, 1500);
-    // if (obj_bgm){obj_bgm.pause();}
-    setTimeout(function(){
-        obj_bgm = bgm_play;
-        obj_bgm.loop = "true";
-        obj_bgm.currentTime = 0;
-        obj_bgm.play();
-        obj_bgm.animate({volume: 1}, 2000);
-    }, 1500);
+    SendMsg("unnei",{name:"play",method:"readyGo2"});
+
+    // obj_bgm.animate({volume: 0}, 1500);
+    // setTimeout(function(){
+    //     obj_bgm = bgm_play;
+    //     obj_bgm.loop = "true";
+    //     obj_bgm.currentTime = 0;
+    //     obj_bgm.play();
+    //     obj_bgm.animate({volume: 1}, 2000);
+    // }, 1500);
 }
 
 function end(){

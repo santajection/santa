@@ -97,6 +97,7 @@ socket.on('message', function(msg) {
 // メッセージを送る
 function SendMsg(target,msg) {
      socket.emit(target, { value: JSON.stringify(msg) });
+     console.log(target,msg);
 }
 
 // 切断する

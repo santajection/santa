@@ -102,6 +102,11 @@ var proj = io.of("/proj").on("connection", function(socket){
 	socket.on('gadget', function(data) {
 		gadget.emit("message",  {value: data.value});
 	});
+
+	socket.on('unnei', function(data) {
+		unnei.emit("message",  {value: data.value});
+	});
+
 });
 
 // モバイル

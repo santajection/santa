@@ -38,7 +38,9 @@ var bgm_hit = new Audio("image/sound/tonakai_hit.mp3");
 var bgm_goal = new Audio("image/sound/goal.mp3");
 var bgm_yojinobori = new Audio("image/sound/sound02.mp3");
 var bgm_warp = new Audio("image/sound/warp.mp3");
-var bgm_fin = new Audio("image/sound/fin.mp3");
+// var bgm_fin = new Audio("image/sound/fin.mp3");
+var bgm_fin = new Audio("image/sound/clear.wav");
+var bgm_start = new Audio("image/sound/start.wav");
 bgm_hit.load();
 bgm_goal.load();
 bgm_yojinobori.load();
@@ -1090,7 +1092,16 @@ function soriAnimationStart(){
 }
 
 function soriAnimation(){
+    // ソリの動き始めアニメーションフレームアウトまで
     var idx = obj_sori.image_id;
+    if (idx > 5 && obj_bgm != bgm_fin){
+        // ソリの動き始めで音楽を鳴らす
+        console.log("soriAnimation");
+        obj_bgm = bgm_fin;
+        obj_bgm.pause();
+        obj_bgm.play();
+        obj_bgm.animate({volume: 1.0}, 4000);
+    }
     if(idx < 32){
         obj_sori.image_id++;
         var left = parseInt(obj_sori.css("left"));
@@ -1121,9 +1132,9 @@ function xmas(){
 
     SendMsg("gadget", {method:"gStop", options:{}});
 
-    obj_bgm = bgm_fin;
+    // obj_bgm = bgm_fin;
     // obj_bgm.load();
-    obj_bgm.play();
+    // obj_bgm.play();
     $("#anime_box").animate({top:"1080px"}, 1500);
 
     $("#screen_fin2").show();
@@ -1351,18 +1362,21 @@ function toujou(id, name){
 
 
 function readyGo(){
-
     // プレ、タイトル、説明用画像を消す
     $("#screen_pre").hide();
     $("#screen_title").hide();
     $("#screen_rule").hide();
     $("#screen_ouen").hide();
 
-    // よーい
-    $("#screen_yoi").show();
+    obj_bgm = bgm_start;
+    obj_bgm.play();
+    setTimeout(function(){
+        // よーい
+        $("#screen_yoi").show();
 
-    // どん!
-    setTimeout("readyGo2()",3000);
+        // どん!
+        setTimeout("readyGo2()",3200);
+    }, 5300);
 }
 
 // よーいどん用
@@ -1376,14 +1390,15 @@ function readyGo2(){
     $("#screen_don").fadeOut(3000);
     //bgm開始
     // if (!obj_bgm){
-    if (obj_bgm){obj_bgm.pause();}
-    obj_bgm = bgm_play;
-    // }
-    obj_bgm.loop = "true";
-    // obj_bgm.load();
-    obj_bgm.currentTime = 0;
-    obj_bgm.pause();
-    obj_bgm.play();
+    obj_bgm.animate({volume: 0}, 1500);
+    // if (obj_bgm){obj_bgm.pause();}
+    setTimeout(function(){
+        obj_bgm = bgm_play;
+        obj_bgm.loop = "true";
+        obj_bgm.currentTime = 0;
+        obj_bgm.play();
+        obj_bgm.animate({volume: 1}, 2000);
+    }, 1500);
 }
 
 function end(){

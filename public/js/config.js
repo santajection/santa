@@ -15,6 +15,11 @@ var imgs_per_frame = 5;   // 1回のアニメーションでのsantaの昇降画
 var move_per_signal = 25; // 1シグナルごとの移動ピクセル数
 var dist_window_santa = 80; // サンタと窓がこのピクセル以下の時窓のトナカイが動き出す
 
+
+var SANTA_MARGIN = 80; // 各サンタのマージン
+var GOAL_LINE = 150;
+
+
 // 色ごとのガジェットを決めるマップ
 var colorToGadgetMap = {"red":["30","41"],"blu":["36","37"],"gre":["31","32"],"yel":["29","40"]};
 

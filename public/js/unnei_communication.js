@@ -107,6 +107,10 @@ function controller(){
 
 // });
 
+function getRandomInt(min, max) {
+  return Math.floor( Math.random() * (max - min + 1) ) + min;
+}
+
 function init(){
     console.log();
 	SendMsg("message", {method:"init",
@@ -114,7 +118,14 @@ function init(){
                       names:{"red":$("#name_red").val(),
                              "blu":$("#name_blu").val(),
                              "gre":$("#name_gre").val(),
-                             "yel":$("#name_yel").val()}});
+                             "yel":$("#name_yel").val()
+                            },
+                      pos:{
+                           "red":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                           "blu":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                           "gre":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                           "yel":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
+                      }});
   gestureStop();
 }
 

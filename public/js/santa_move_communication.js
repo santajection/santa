@@ -54,7 +54,7 @@ socket.on('message', function(msg) {
                colorToGadgetMap[color][index] = gadgetNum;
                break;
             case "init":
-               init(msgObj.names);
+               init(msgObj.names, msgObj.pos);
                break;
             case "pre":
                pre();

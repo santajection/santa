@@ -136,15 +136,17 @@ function toujouBtn(color){
                       name:$("#name_"+color).val()});
 }
 function config(){
-    console.log({
-                          frame_to_change_img: $("#config_frame_to_change_img").val(),
-                          move_per_frame: $("#config_move_per_frame").val(),
+  console.log({
+                          frame_per_signal: $("#config_frame_per_signal").val(),
+                          imgs_per_frame: $("#config_imgs_per_frame").val(),
+                          move_per_signal: $("#config_move_per_signal").val(),
                           dist_window_santa: $("#config_dist_window_santa").val()
                       });
 	SendMsg("message", {method:"config",
                       options:{
-                          frame_to_change_img: $("#config_frame_to_change_img").val(),
-                          move_per_frame: $("#config_move_per_frame").val(),
+                          frame_per_signal: $("#config_frame_per_signal").val(),
+                          imgs_per_frame: $("#config_imgs_per_frame").val(),
+                          move_per_signal: $("#config_move_per_signal").val(),
                           dist_window_santa: $("#config_dist_window_santa").val(),
                           debug_level: $("#config_debug_level").val()
                       }});
@@ -181,8 +183,9 @@ function DisConnect() {
 
 $(
     function(){
-        $("#config_frame_to_change_img").val(frame_to_change_img);
-        $("#config_move_per_frame").val(move_per_frame);
+        $("#config_frame_per_signal").val(frame_per_signal);
+        $("#config_imgs_per_frame").val(imgs_per_frame);
+        $("#config_move_per_signal").val(move_per_signal);
         $("#config_dist_window_santa").val(dist_window_santa);
         $("#config_debug_level").val(DEBUG_LEVEL);
         $(document).keydown(function(e) {

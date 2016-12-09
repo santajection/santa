@@ -1,6 +1,5 @@
 
 
-var SANTA_MARGIN = 80; // 各サンタのマージン
 
 
 var obj_santa;
@@ -14,7 +13,6 @@ var intro_santa;
 var intro_name;
 var WIDTH;
 var HEIGHT;
-var GOAL_LINE = 150;
 var game_timer;
 var window_timer;
 var intro_santa_timer;
@@ -631,7 +629,7 @@ function reset_santa_pos(){
 function getRandomInt(min, max) {
   return Math.floor( Math.random() * (max - min + 1) ) + min;
 }
-function reset_window_pos(){
+function reset_window_pos(pos){
     // サンタの位置を初期値（中央に移動）
     console.log("reset_window_pos");
     // var step = (WIDTH - 2 * MARGIN) / 4;
@@ -641,7 +639,7 @@ function reset_window_pos(){
         // console.log("step" + step);
         obj_window[color].css("left", left);
         // obj_window[color].css("top", getRandomInt(GOAL_LINE + MARGIN * 2, 500));
-        obj_window[color].css("top", getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500));
+        obj_window[color].css("top", pos[color]);
         left += step;
     }
 }
@@ -723,7 +721,7 @@ $(function(){
     // $("#game_box").mask("Waiting...", 1000);
 });
 
-function init(names){
+function init(names,window_pos){
     // function init1() {
         // $("#prepare_box").hide();
         $("#game_box").fadeIn("100");
@@ -742,6 +740,12 @@ function init(names){
                 blu : $("#name_blu").text(),
                 yel : $("#name_yel").text(),
                 gre : $("#name_gre").text()
+            };
+            window_pos = {
+                 "red":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                 "blu":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                 "gre":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                 "yel":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
             };
         }
         obj_santa = {
@@ -824,7 +828,7 @@ function init(names){
         
         reset_screen();
         reset_santa_pos();
-        reset_window_pos();
+        reset_window_pos(window_pos);
         toujou_end();
 
         $("#anime_box").css("top",0);

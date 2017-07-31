@@ -54,7 +54,7 @@ socket.on('message', function(msg) {
                colorToGadgetMap[color][index] = gadgetNum;
                break;
             case "init":
-               init(msgObj.names);
+               init(msgObj.names, msgObj.pos);
                break;
             case "pre":
                pre();
@@ -79,8 +79,9 @@ socket.on('message', function(msg) {
              toujou_start(msgObj.color, msgObj.name);
              break;
             case "config":
-             frame_to_change_img = msgObj.options["frame_to_change_img"];
-             move_per_frame = msgObj.options["move_per_frame"];
+             frame_per_signal = msgObj.options["frame_per_signal"];
+             imgs_per_frame = msgObj.options["imgs_per_frame"];
+             move_per_signal = msgObj.options["move_per_signal"];
              dist_window_santa = msgObj.options["dist_window_santa"];
              DEBUG_LEVEL = msgObj.options["debug_level"];
              break;
@@ -96,6 +97,7 @@ socket.on('message', function(msg) {
 // メッセージを送る
 function SendMsg(target,msg) {
      socket.emit(target, { value: JSON.stringify(msg) });
+     console.log(target,msg);
 }
 
 // 切断する

@@ -20,13 +20,28 @@
 <!-- <input type="radio" name="santa" value="gre">緑サンタ</input> -->
 
 <h2>サンタの動き調整</h2>
-ネットワーク越しにゲームをする場合は遅延などがあるため，
-ここで微調整する．</br>
-数値入力後反映ボタンを押すこと．</br>
-画像切替のインターバルframe：<input id="config_frame_to_change_img" type="text" value="none"></input></br>
-1frame毎の移動ピクセル数：<input id="config_move_per_frame" type="text" value="none"></input></br>
-サンタが窓に近づいた時にトナカイが出始める距離：<input id="config_dist_window_santa" type="text" value="none"></input></br>
-DEBUG_LEVEL(デバッグ用，0は何も表示しない)：<input id="config_debug_level" type="text" value="none"></input></br>
+ネットワーク越しにゲームをする場合は遅延やロスがあるためここで微調整する</br>
+数値入力後反映ボタンを押すこと．なお、ゲーム画面を再表示するとクリアされる。</br>
+</br>
+<table>
+<tr>
+	<td><!--サンタの動き1frameに必要なsignal数-->何回スマホを振ったら1回サンタが動くか：</td>
+	<td><input id="config_frame_per_signal" type="text" value="none"></input></td>
+</tr><tr>
+	<td><!--1frame毎のサンタの動き画像数　（100msで1枚変化させるので、5なら1frameに500msかかる）-->1回のサンタの動きに使う画像枚数：</td>
+	<td><input id="config_imgs_per_frame" type="text" value="none"></input></td>
+</tr><tr>
+	<td><!--1signalに対するサンタが動くピクセル数。750をこの数で割ると何回振ればゴールできるかがわかる-->1回スマホを振ったら何ピクセル動くか：</td>
+	<td><input id="config_move_per_signal" type="text" value="none"></input></td>
+</tr><tr>
+	<td>サンタが窓に近づいた時にトナカイが出始める距離：</td>
+	<td><input id="config_dist_window_santa" type="text" value="none"></input></td>
+</tr><tr>
+	<td>DEBUG_LEVEL(デバッグ用，0は何も表示しない)：</td>
+	<td><input id="config_debug_level" type="text" value="none"></input></td>
+</tr>
+</table>
+
 <button onclick="config()">反映</button>
 
 <h2>サンタコントローラー</h2>

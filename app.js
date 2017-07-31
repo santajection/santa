@@ -14,6 +14,7 @@ var app = express();
 
 // all environments
 app.set('port', process.env.PORT || 3000);
+//app.set('port', 80);
 app.set('views', path.join(__dirname, 'views'));
 //app.set('view engine', 'jade');
 app.set('view engine', 'ejs');
@@ -101,6 +102,11 @@ var proj = io.of("/proj").on("connection", function(socket){
 	socket.on('gadget', function(data) {
 		gadget.emit("message",  {value: data.value});
 	});
+
+	socket.on('unnei', function(data) {
+		unnei.emit("message",  {value: data.value});
+	});
+
 });
 
 // モバイル

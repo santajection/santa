@@ -1,6 +1,5 @@
 
 
-var SANTA_MARGIN = 80; // 各サンタのマージン
 
 
 var obj_santa;
@@ -14,7 +13,6 @@ var intro_santa;
 var intro_name;
 var WIDTH;
 var HEIGHT;
-var GOAL_LINE = 150;
 var game_timer;
 var window_timer;
 var intro_santa_timer;
@@ -32,17 +30,33 @@ var STATE_CLOSED_AND_MOVE = 6; // 窓は閉まっていてアニメーション�
 var STATE_OPENED = 7; // 窓は相手なくアニメーションも動いていない
 var STATE_CLOSED_AND_FINISHED = 8; // 窓は一回相手もうずっと閉まっている状態
 
-var obj_bgm;
-var bgm_play = new Audio("image/sound/bgm.mp3");
-var bgm_hit = new Audio("image/sound/tonakai_hit.mp3");
-var bgm_goal = new Audio("image/sound/goal.mp3");
-var bgm_yojinobori = new Audio("image/sound/sound02.mp3");
-var bgm_warp = new Audio("image/sound/warp.mp3");
-var bgm_fin = new Audio("image/sound/fin.mp3");
-bgm_hit.load();
-bgm_goal.load();
-bgm_yojinobori.load();
-bgm_warp.load();
+// var BGM_Communication = function(name){
+//     this.name = name;
+// }
+
+// BGM_Communication.prototype.play = function(){
+//     SendMsg("bgm",{name:this.name});
+// }
+// BGM_Communication.prototype.animate = function(attr, value){
+// //        obj_bgm.animate({volume: 1}, 2000);
+//     SendMsg("bgm",{name:this.name});
+// }
+// BGM_Communication.prototype.setValue = function(attr, value){
+//     SendMsg("bgm",{name:this.name, method:attr, arg:value});
+
+// }
+
+
+
+// var obj_bgm;
+// var bgm_play = new BGM_Communication("play");
+// var bgm_hit = new BGM_Communication("hit");
+// var bgm_goal = new BGM_Communication("goal");
+// var bgm_yojinobori = new BGM_Communication("yojinobori");
+// var bgm_warp = new BGM_Communication("warp");
+// // var bgm_fin = new BGM_Communication("");
+// var bgm_fin = new BGM_Communication("fin");
+// var bgm_start = new BGM_Communication("start");
 
 function moveleft(){
     console.log(obj);
@@ -59,10 +73,10 @@ var k_left = 37;
 var k_up = 38;
 var k_right = 39;
 var k_down = 40;
-var santa_dir = {red:1,blu:1,yel:1,gre:1};
+var santa_sig = {red:{37:0,38:0,39:0,40:0}, blu:{37:0,38:0,39:0,40:0},
+                 yel:{37:0,38:0,39:0,40:0}, gre:{37:0,38:0,39:0,40:0}};
 var color_id = {red:1,blu:2,yel:3,gre:4};
 var santa_pos = {red:undefined, blu:undefined, yel:undefined, gre:undefined};
-var santa_speed = {};
 var santa_lock = {red:false, blu:false, gre:false, yel:false};
 
 // var santaL_src = "image/santa_pack/red_l.png";
@@ -198,41 +212,101 @@ function debug(){
     }
 }
 
-function santamove(color){
+function santamove(color, direction){
+
+    // 1回呼ばれる毎にシグナルを追加する
+    santa_sig[color][direction] += 1;
 
     if(santa_lock[color]){
-        santa_dir[color] += 1;
         return;
     }
-    // 動きカウンタがしきい値以上ならば次の画像に差し替え
-    // console.log("src="+obj_santa[color].attr("src"));
-    if (santa_dir[color] > frame_to_change_img){
+
+    // 動きカウンタがしきい値以上ならば動かす
+    var sum = santa_sig[color][k_up] + santa_sig[color][k_down] + santa_sig[color][k_right] + santa_sig[color][k_left];
+    if (sum >= frame_per_signal){
+
+        // アニメーション制御間隔：　設定値「1回の切替枚数imgs_per_frame」×100ms毎にアニメーションを制御する
         santa_lock[color] = true;
+        setTimeout(function(){
+            santa_lock[color] = false; 
+        }, imgs_per_frame * 100);
 
-        santa_speed[color] = 1;
+        //
+        // シグナルの整理と相殺
+        //
 
-        if(santa_dir[color] > frame_to_change_img * 2){
-            santa_dir[color] -= frame_to_change_img * 2;
-            santa_speed[color] = 2;
+        // 下向きと右向きのシグナルの総和を数える
+        var left_count = santa_sig[color][k_right] - santa_sig[color][k_left];
+        var top_count  = santa_sig[color][k_down] - santa_sig[color][k_up];
+        if (left_count > 0) {
+            santa_sig[color][k_right] = santa_sig[color][k_right] - santa_sig[color][k_left];
+            santa_sig[color][k_left] = 0;
         } else {
-            santa_dir[color] -= frame_to_change_img;
+            santa_sig[color][k_right] = 0;
+            santa_sig[color][k_left] = santa_sig[color][k_left] - santa_sig[color][k_right];               
+        }
+        if (top_count > 0) {
+            santa_sig[color][k_down] = santa_sig[color][k_down] - santa_sig[color][k_up];
+            santa_sig[color][k_up] = 0;
+        } else {
+            santa_sig[color][k_down] = 0;
+            santa_sig[color][k_up] = santa_sig[color][k_up] - santa_sig[color][k_down];               
         }
 
-        for(var idx = 1; idx < 5 * santa_speed[color]; idx++){
+        //
+        // 動作1 上下左右への動き
+        //
+
+        // デフォルトでは来た数だけ進める
+        var left_offset = left_count;
+        var top_offset = top_count;
+
+        // シグナルが3つ以上が来ていたら、来たシグナルの半分を消費し、残りは次回に持ち越すことにする
+        if(Math.abs(top_count) > 2){
+            top_offset = (top_count > 0) ? Math.ceil(top_count / 2) : Math.floor(top_count / 2);
+        }
+        if(Math.abs(left_count) > 2){
+            left_offset = (left_count > 0) ? Math.ceil(left_count / 2) : Math.floor(left_count / 2);
+        }
+
+        // たくさんシグナルが来れば来るほどたくさん進む
+        obj_santa[color].animate(
+            {
+                left: "+=" + move_per_signal * left_offset,
+                top:  "+=" + move_per_signal * top_offset
+            }
+            , imgs_per_frame * 100
+        );
+
+        // 進んだ分だけシグナルを消費する
+        if(top_count > 0) {
+            santa_sig[color][k_down] -= top_offset;
+        } else {
+            santa_sig[color][k_up] -= Math.abs(top_offset);                
+        }
+        if(left_count > 0) {
+            santa_sig[color][k_right] -= left_offset;
+        } else {
+            santa_sig[color][k_left] -= Math.abs(left_offset);                
+        }
+
+        //
+        // 動作2 画像の差し替えによる手のもがき
+        //
+
+        // 動きカウンタがしきい値の2倍以上なら2倍速く動かす
+        var santa_speed = (sum >= frame_per_signal * 2) ? 2 : 1.4;
+
+        // 画像の差替
+        for(var idx = 1; idx <= imgs_per_frame * santa_speed; idx++){
             setTimeout(function(){
                 if(obj_santa[color].state == STATE_MOVING){
                     obj_santa[color].attr({
-                        src: next_image_src(obj_santa[color].attr("src"), 10)
+                        src: next_image_src(obj_santa[color].attr("src"), 10) //10枚で1周期 
                     });
                 }
-            },100 / santa_speed[color] * idx);
-        }
-        setTimeout(function(){
-            santa_lock[color] = false; 
-        },500);
-
-    }else{
-        santa_dir[color] += 1;
+            }, 100 * idx / santa_speed); // 基本は100msごとに画像変更。2倍速なら50ms毎に画像変更。
+        } 
     }
 }
 
@@ -250,7 +324,8 @@ function santa_goal_anime(color){
         santa_goal_sori_ride(color);
     } else {
         if (obj_santa[color].image_id % 3 == 0){
-            bgm_yojinobori.play();
+            SendMsg("unnei",{name:"yojinobori",method:"play"});
+            //bgm_yojinobori.play();
         }
         change_image_src(obj_santa[color], obj_santa[color].image_id);
         obj_santa[color].image_id++;
@@ -278,7 +353,8 @@ function santa_goal_sori_ride(color){
     obj_santa[color].css('z-index', Number($("#sori").css('z-index'))-1);
     console.log("color's z-index" + obj_santa[color].css('z-index'));
     // そりに乗る
-    bgm_goal.play();
+    SendMsg("unnei",{name:"goal",method:"play"});
+    //    bgm_goal.play();
     if (obj_santa[color].image_id == 0){
         // 初期化処理
         obj_santa[color].css("left", 370 + 50 * obj_santa[color].id);
@@ -358,8 +434,9 @@ function santa_hitstop(color){
     // console.log(id);
     // var down_src = "image/down" + id + "/down" + id + ".png";
     obj_santa[color].attr({src:"image/down" + id + "/1.png"});
-    console.log(bgm_hit);
-    bgm_hit.play();
+    //console.log(bgm_hit);
+    SendMsg("unnei",{name:"hit",method:"play"});
+    //    bgm_hit.play();
     hit_animation(color, prev_src);
 }
 
@@ -476,6 +553,7 @@ function movePlane() {
         }
 
         if (toppos <= GOAL_LINE && obj_santa[color].state == STATE_MOVING){
+            obj_santa[color].stop();
             goalAnimation(color);
             // alert();
         }
@@ -485,40 +563,20 @@ function movePlane() {
             // トナカイとぶつかった
             console.log("HITTED:" + obj_santa[color].state);
             obj_santa[color].state = STATE_HITTED;
+            obj_santa[color].stop();
             santa_hitstop(color);
         }
 
         if (obj_santa[color].state == STATE_MOVING){
 
             for (var direction in move_keys[color]) {
-	              var pos_left = px2int(obj_santa[color].css("left"));
-	              var pos_top = px2int(obj_santa[color].css("top"));
+                // シグナルが入っていないような異常系は除外
                 if (!move_keys[color].hasOwnProperty(direction)) continue;
-                if (direction == k_left) {
-	                  // pos_left = Math.max(0, pos_left - move_per_frame);
-                    obj_santa[color].animate({left: "-="+move_per_frame}, 0);
-                    // obj_name[color].animate({left:"-="+move_per_frame}, 0);
-                    santamove(color);
-                }
-                if (direction == k_up) {
-                    // if ((pos_top - move_per_frame) > 0){
-                    obj_santa[color].animate({top: "-="+move_per_frame}, 0);
-                    // obj_name[color].animate({top:"-="+move_per_frame}, 0);
-                    santamove(color);
-                    // }
-                }
-                if (direction == k_right) {
-	                  // pos_left = Math.min(WIDTH - px2int(obj_santa[color].css("width")), pos_left + move_per_frame);
-                    obj_santa[color].animate({left: "+="+move_per_frame}, 0);
-                    // obj_name[color].animate({left:"+="+move_per_frame}, 0);
-                    santamove(color);
-                }
-                if (direction == k_down) {
-	                  // pos_top = Math.min(HEIGHT - px2int(obj_santa[color].css("height")), pos_top + move_per_frame);
-                    obj_santa[color].animate({top: "+="+move_per_frame}, 0);
-                    // obj_name[color].animate({top:"+="+move_per_frame}, 0);
-                    santamove(color);
-                }
+
+                // サンタを上下左右に動かす
+                santamove(color, direction);
+
+                // 上下左右にはみ出さないように補正
                 if (px2int(obj_santa[color].css("top")) < 0) obj_santa[color].css("top", 0);
                 if (px2int(obj_santa[color].css("left")) < 0) obj_santa[color].css("left", 0);
                 // 下方向だけははみ出しても良いようにする？
@@ -588,7 +646,7 @@ function reset_santa_pos(){
 function getRandomInt(min, max) {
   return Math.floor( Math.random() * (max - min + 1) ) + min;
 }
-function reset_window_pos(){
+function reset_window_pos(pos){
     // サンタの位置を初期値（中央に移動）
     console.log("reset_window_pos");
     // var step = (WIDTH - 2 * MARGIN) / 4;
@@ -598,7 +656,7 @@ function reset_window_pos(){
         // console.log("step" + step);
         obj_window[color].css("left", left);
         // obj_window[color].css("top", getRandomInt(GOAL_LINE + MARGIN * 2, 500));
-        obj_window[color].css("top", getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500));
+        obj_window[color].css("top", pos[color]);
         left += step;
     }
 }
@@ -680,7 +738,7 @@ $(function(){
     // $("#game_box").mask("Waiting...", 1000);
 });
 
-function init(names){
+function init(names,window_pos){
     // function init1() {
         // $("#prepare_box").hide();
         $("#game_box").fadeIn("100");
@@ -699,6 +757,12 @@ function init(names){
                 blu : $("#name_blu").text(),
                 yel : $("#name_yel").text(),
                 gre : $("#name_gre").text()
+            };
+            window_pos = {
+                 "red":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                 "blu":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                 "gre":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                 "yel":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
             };
         }
         obj_santa = {
@@ -728,6 +792,13 @@ function init(names){
             obj_santa[color].state = STATE_INIT;
             obj_santa[color].image_id = 1; // 各種アニメーション用
             obj_santa[color].show();
+        }
+        // シグナルカウンタを初期化
+        for(var color in santa_sig){
+            santa_sig[color][k_up] = 0;
+            santa_sig[color][k_down] = 0;
+            santa_sig[color][k_left] = 0;
+            santa_sig[color][k_right] = 0;
         }
         // for (var color in obj_window){
         //     // name
@@ -774,7 +845,7 @@ function init(names){
         
         reset_screen();
         reset_santa_pos();
-        reset_window_pos();
+        reset_window_pos(window_pos);
         toujou_end();
 
         $("#anime_box").css("top",0);
@@ -784,9 +855,11 @@ function init(names){
         obj_sori.css("top",0);
         obj_sori.attr("src","image/sleigh1/sleigh.png");
         obj_sori.removeClass("refrect");
-        if(obj_bgm){
-            obj_bgm.pause();
-        }
+
+        SendMsg("unnei",{name:"obj_bgm",method:"pause_if_exist"});
+        // if(obj_bgm){
+        //     obj_bgm.pause();
+        // }
 
         $(document).keydown(function(e) {
             keys[e.keyCode] = true;
@@ -851,9 +924,11 @@ function timeUp(){
     }
     clearInterval(window_timer);
     window_timer = null;
-    if(obj_bgm){
-        obj_bgm.pause();
-    }
+
+    SendMsg("unnei",{name:"obj_bgm",method:"pause_if_exist"});
+    // if(obj_bgm){
+    //     obj_bgm.pause();
+    // }
 
     // ヒット時のアニメーションの完了を待ってワープモーションに移る
     // setTimeout(function(){warp();}, 500);
@@ -968,10 +1043,10 @@ function warpAnimation2(color){
         setTimeout(function(){warpAnimation2(color);},100);
     } else {
         setTimeout(function(){
-            obj_bgm = bgm_warp;
-            // obj_bgm.load();
-            // obj_bgm.currentTime = 0;
-            obj_bgm.play();
+            SendMsg("unnei",{name:"warp",method:"obj_overwrite"});
+            // obj_bgm = bgm_warp;
+            // obj_bgm.play();
+
             obj_santa[color].animate({top:-1440},2000);
             obj_name[color].animate({top:-1440},2800);
             setTimeout(function(){warpAnimation3(color);},2100);
@@ -1042,7 +1117,18 @@ function soriAnimationStart(){
 }
 
 function soriAnimation(){
+    // ソリの動き始めアニメーションフレームアウトまで
     var idx = obj_sori.image_id;
+    SendMsg("unnei",{name:"fin", idx:idx, method:"soriAnimation"});
+
+    // if (idx > 5 && obj_bgm != bgm_fin){
+    //     // ソリの動き始めで音楽を鳴らす
+    //     console.log("soriAnimation");
+    //     obj_bgm = bgm_fin;
+    //     obj_bgm.pause();
+    //     obj_bgm.play();
+    //     obj_bgm.animate({volume: 1.0}, 4000);
+    // }
     if(idx < 32){
         obj_sori.image_id++;
         var left = parseInt(obj_sori.css("left"));
@@ -1073,9 +1159,9 @@ function xmas(){
 
     SendMsg("gadget", {method:"gStop", options:{}});
 
-    obj_bgm = bgm_fin;
+    // obj_bgm = bgm_fin;
     // obj_bgm.load();
-    obj_bgm.play();
+    // obj_bgm.play();
     $("#anime_box").animate({top:"1080px"}, 1500);
 
     $("#screen_fin2").show();
@@ -1303,18 +1389,22 @@ function toujou(id, name){
 
 
 function readyGo(){
-
     // プレ、タイトル、説明用画像を消す
     $("#screen_pre").hide();
     $("#screen_title").hide();
     $("#screen_rule").hide();
     $("#screen_ouen").hide();
 
-    // よーい
-    $("#screen_yoi").show();
+    SendMsg("unnei",{name:"start",method:"obj_overwrite"});
+    // obj_bgm = bgm_start;
+    // obj_bgm.play();
+    setTimeout(function(){
+        // よーい
+        $("#screen_yoi").show();
 
-    // どん!
-    setTimeout("readyGo2()",3000);
+        // どん!
+        setTimeout("readyGo2()",3200);
+    }, 5300);
 }
 
 // よーいどん用
@@ -1327,15 +1417,16 @@ function readyGo2(){
     $("#screen_don").show();
     $("#screen_don").fadeOut(3000);
     //bgm開始
-    // if (!obj_bgm){
-    if (obj_bgm){obj_bgm.pause();}
-    obj_bgm = bgm_play;
-    // }
-    obj_bgm.loop = "true";
-    // obj_bgm.load();
-    obj_bgm.currentTime = 0;
-    obj_bgm.pause();
-    obj_bgm.play();
+    SendMsg("unnei",{name:"play",method:"readyGo2"});
+
+    // obj_bgm.animate({volume: 0}, 1500);
+    // setTimeout(function(){
+    //     obj_bgm = bgm_play;
+    //     obj_bgm.loop = "true";
+    //     obj_bgm.currentTime = 0;
+    //     obj_bgm.play();
+    //     obj_bgm.animate({volume: 1}, 2000);
+    // }, 1500);
 }
 
 function end(){

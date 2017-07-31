@@ -1,15 +1,24 @@
 var DEBUG_LEVEL = 0; // 0: release, 1:debug
-//var SERVER = "http://192.168.0.3:3000";
+var SERVER = "http://192.168.11.3:3000";
 // var SERVER = "http://localhost:3000";
-var SERVER = "http://santamobile.herokuapp.com";
+//var SERVER = "http://santamobile.herokuapp.com";
+var SERVER_CLOUD = "http://santawall.herokuapp.com";
+var useCloud = false;
+
 var SANTA_RED_GADGET = "red";
 var SANTA_BLUE_GADGET = "blue";
 var SANTA_GREEN_GADGET = "green";
 var SANTA_YELLOW_GADGET = "yellow";
 
-var frame_to_change_img = 2; // santaの昇り降り画像の切り替えフレーム数(2の場合2frame毎に画像を差し替え)
-var move_per_frame = 10; // 1フレームごとの移動ピクセル数
+var frame_per_signal = 1; // santaの昇降画像の切替をガジェット等からの何シグナルごとにやるか(2の場合2signal毎に1回のアニメーション処理を実施)
+var imgs_per_frame = 5;   // 1回のアニメーションでのsantaの昇降画像の切替数(5の場合1回のアニメーションで5枚の画像を100ms毎に500msで差替)
+var move_per_signal = 25; // 1シグナルごとの移動ピクセル数
 var dist_window_santa = 80; // サンタと窓がこのピクセル以下の時窓のトナカイが動き出す
+
+
+var SANTA_MARGIN = 80; // 各サンタのマージン
+var GOAL_LINE = 150;
+
 
 // 色ごとのガジェットを決めるマップ
 var colorToGadgetMap = {"red":["30","41"],"blu":["36","37"],"gre":["31","32"],"yel":["29","40"]};

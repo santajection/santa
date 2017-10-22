@@ -228,7 +228,7 @@ function santamove(color, direction){
         // アニメーション制御間隔：　設定値「1回の切替枚数imgs_per_frame」×100ms毎にアニメーションを制御する
         santa_lock[color] = true;
         setTimeout(function(){
-            santa_lock[color] = false; 
+            santa_lock[color] = false;
         }, imgs_per_frame * 100);
 
         //
@@ -243,14 +243,14 @@ function santamove(color, direction){
             santa_sig[color][k_left] = 0;
         } else {
             santa_sig[color][k_right] = 0;
-            santa_sig[color][k_left] = santa_sig[color][k_left] - santa_sig[color][k_right];               
+            santa_sig[color][k_left] = santa_sig[color][k_left] - santa_sig[color][k_right];
         }
         if (top_count > 0) {
             santa_sig[color][k_down] = santa_sig[color][k_down] - santa_sig[color][k_up];
             santa_sig[color][k_up] = 0;
         } else {
             santa_sig[color][k_down] = 0;
-            santa_sig[color][k_up] = santa_sig[color][k_up] - santa_sig[color][k_down];               
+            santa_sig[color][k_up] = santa_sig[color][k_up] - santa_sig[color][k_down];
         }
 
         //
@@ -282,12 +282,12 @@ function santamove(color, direction){
         if(top_count > 0) {
             santa_sig[color][k_down] -= top_offset;
         } else {
-            santa_sig[color][k_up] -= Math.abs(top_offset);                
+            santa_sig[color][k_up] -= Math.abs(top_offset);
         }
         if(left_count > 0) {
             santa_sig[color][k_right] -= left_offset;
         } else {
-            santa_sig[color][k_left] -= Math.abs(left_offset);                
+            santa_sig[color][k_left] -= Math.abs(left_offset);
         }
 
         //
@@ -302,11 +302,11 @@ function santamove(color, direction){
             setTimeout(function(){
                 if(obj_santa[color].state == STATE_MOVING){
                     obj_santa[color].attr({
-                        src: next_image_src(obj_santa[color].attr("src"), 10) //10枚で1周期 
+                        src: next_image_src(obj_santa[color].attr("src"), 10) //10枚で1周期
                     });
                 }
             }, 100 * idx / santa_speed); // 基本は100msごとに画像変更。2倍速なら50ms毎に画像変更。
-        } 
+        }
     }
 }
 
@@ -591,25 +591,6 @@ function movePlane() {
     }
 }
 
-function move_list(move_list){
-    console.log("move_list:" + move_list);
-    for (var i = 0; i < move_list.length; i++){
-        var duration = move_list[i]['duration'];
-        if (duration == undefined){
-            duration = 400;
-        }
-        obj_santa[red].animate({
-            left: "+="+move_list[i]['left'],
-            top: "+="+move_list[i]['top']
-        }, duration);
-    }
-}
-
-function move_from_textarea(str){
-    console.log(str);
-    move_list(eval(str));
-}
-
 function set_name_pos(color){
     // console.log(obj_santa[color].css("left"));
     var left = px2int(obj_santa[color].css("left")) + px2int(obj_santa[color].css("width")) / 2 - px2int(obj_name[color].css("width")) / 2 - 10;
@@ -719,7 +700,7 @@ function setImages(){
     $("#window_blu").attr({src:"image/window/1.png"});
     $("#window_gre").attr({src:"image/window/1.png"});
     $("#window_yel").attr({src:"image/window/1.png"});
-    
+
     $("#santa_red").attr({src:"image/santa1/1.png"});
     $("#santa_blu").attr({src:"image/santa2/1.png"});
     $("#santa_gre").attr({src:"image/santa4/1.png"});
@@ -842,7 +823,7 @@ function init(names,window_pos){
         }
 
         // 画面配置
-        
+
         reset_screen();
         reset_santa_pos();
         reset_window_pos(window_pos);

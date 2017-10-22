@@ -9,6 +9,7 @@ var obj_tonakai;
 var obj_sori;
 var obj_animebox;
 var obj_up;
+var obj_players = {}; // {uuid: {x, y, color, key, lock, name, signal, message}} // messageはデバッグメッセージ
 var intro_santa;
 var intro_name;
 var WIDTH;
@@ -199,16 +200,19 @@ function next_image_src(cur_image_src, num_image){
 
 function debug(){
     if (DEBUG_LEVEL == 0) return;
-    for (var color in obj_santa){
+    for (var uuid in obj_players) {
+        //console.log("debug", color);
         // santa_pos[color] = $("<p>");
-        santa_pos[color].css("top", obj_santa[color].css("top"));
-        santa_pos[color].css("left", obj_santa[color].css("left"));
-        var str = color +
-            " top:" + obj_santa[color].css("top") +
-            " left:" + obj_santa[color].css("left");
-        santa_pos[color].text(str);
-        // console.log(santa_pos[color]);
-        // alert("");
+        obj_players[uuid].img.css("top", obj_players[uuid].img.css("top"));
+        obj_players[uuid].img.css("left", obj_players[uuid].img.css("left"));
+        // santa_pos[color].css("top", obj_santa[color].css("top"));
+        // santa_pos[color].css("left", obj_santa[color].css("left"));
+        var str = uuid +
+            " top:" + obj_players[uuid].img.css("top") +
+            " left:" + obj_players[uuid].img.css("left");
+        obj_players[uuid].message = str;
+        console.log(uuid, str)
+        // santa_pos[color].text(str);
     }
 }
 
@@ -529,10 +533,10 @@ function movePlane() {
         return;
     }
     var move_keys = _communication_keys;
-    for(var direction in keys){
-        if (!keys.hasOwnProperty(direction)) continue;
-        move_keys.red[direction] = true;
-    }
+    // for(var direction in keys){
+    //     if (!keys.hasOwnProperty(direction)) continue;
+    //     move_keys.red[direction] = true;
+    // }
     _communication_keys = {red:{},blu:{},yel:{},gre:{}};
     for(var color in obj_santa){
         var toppos = px2int(obj_santa[color].css("top"));
@@ -591,19 +595,20 @@ function movePlane() {
     }
 }
 
-function set_name_pos(color){
+// santaの位置から逆算して、名前の表示を動かす
+function set_name_pos(player){
     // console.log(obj_santa[color].css("left"));
-    var left = px2int(obj_santa[color].css("left")) + px2int(obj_santa[color].css("width")) / 2 - px2int(obj_name[color].css("width")) / 2 - 10;
+    var left = px2int(player.img.css("left")) + px2int(player.img.css("width")) / 2 - px2int(player.name.css("width")) / 2 - 10;
     // console.log(obj_santa[color].css("left"));
-    var top = px2int(obj_santa[color].css("top")) + px2int(obj_santa[color].css("height")) + 30;
+    var top = px2int(player.img.css("top")) + px2int(player.img.css("height")) + 30;
 
     // console.log(obj_name[color].css("left") + " " + left);
-    obj_name[color].css("left", left);
-    var name_height = px2int(obj_name[color].css("height"));
+    player.name.css("left", left);
+    var name_height = px2int(player.name.css("height"));
     if (top + name_height + 20 > HEIGHT){
         top = HEIGHT - name_height - 20;
     }
-    obj_name[color].css("top", top);
+    player.name.css("top", top);
 }
 
 function reset_santa_pos(){
@@ -711,15 +716,67 @@ $(function(){
     console.log($("#game_box"));
     load_images();
     // console.log(num_images);
+    dummy_uuids = {
+        1: 1,
+        2: 2,
+        3: 3,
+        4: 4
+    };
     waitUntil(function(){
         return num_loaded_images < num_images;
     }, 150, function(){
         setImages();
-        init()});
+        init(dummy_uuids)});
     // $("#game_box").mask("Waiting...", 1000);
 });
 
-function init(names,window_pos){
+function createUser(uuid) {
+    body = document.getElementById("anime_box");
+    // div = body.createElement("div")
+    div = document.createElement('img');
+    div.id = "img-" + uuid;
+    body.appendChild(div);
+    obj = $("#" + div.id)
+    css_config = [
+        ["position", "absolute"],
+        ["left", "0px"],
+        ["top", "16px"],
+        ["z-index", "5000"]]
+    for (var i = 0; i < css_config.length; i++) {
+        obj.css(css_config[i][0], css_config[i][1]);
+    }
+    // obj.css("position", "absolute");
+    // obj.css("left", "0px");
+    // obj.css("top", "16px");
+    // obj.css("z-index", "5000");
+
+    namediv = document.createElement('div');
+    namediv.id = "name-" + uuid;
+    body.appendChild(namediv);
+    obj_name = $("#" + namediv.id)
+    for (var i = 0; i < css_config.length; i++) {
+        obj_name.css(css_config[i][0], css_config[i][1]);
+        obj_name.text(uuid)
+    }
+    document.getElementsByTagName("body").item(0);
+
+    return {
+        x: 0,
+        y: 0,
+        color: "red",
+        key: null,
+        lock: false,
+        name: obj_name,
+        signal: {k_up: 0, k_down: 0, k_left: 0, k_right: 0},
+        message: "None",
+        img: obj,
+        state: STATE_INIT,
+        image_id: 1,
+        img_dir: 1 // [1,2,3,4]
+    };
+}
+
+function init(uuids,window_pos){
     // function init1() {
         // $("#prepare_box").hide();
         $("#game_box").fadeIn("100");
@@ -732,25 +789,16 @@ function init(names,window_pos){
         }
 
         // 各種オブジェクトの初期化
-        if (!names){
-            names = {
-                red : $("#name_red").text(),
-                blu : $("#name_blu").text(),
-                yel : $("#name_yel").text(),
-                gre : $("#name_gre").text()
-            };
-            window_pos = {
-                 "red":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-                 "blu":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-                 "gre":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-                 "yel":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
-            };
+        for (uuid in uuids) {
+            obj_players[uuid] = createUser(uuid)
+            obj_players[uuid].img.attr("src","image/santa" + obj_players[uuid].img_dir + "/1.png");
+            obj_players[uuid].img.show()
         }
-        obj_santa = {
-            red : $("#santa_red"),
-            blu : $("#santa_blu"),
-            yel : $("#santa_yel"),
-            gre : $("#santa_gre")
+        window_pos = {
+                "red":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                "blu":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                "gre":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                "yel":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
         };
         obj_window = {
             red : $("#window_red"),
@@ -758,29 +806,13 @@ function init(names,window_pos){
             yel : $("#window_yel"),
             gre : $("#window_gre")
         };
-        obj_name = {
-            red : $("#name_red"),
-            blu : $("#name_blu"),
-            yel : $("#name_yel"),
-            gre : $("#name_gre")
-        };
-        obj_santa["red"].id = 1; // 個別画像フォルダを参照するためのid
-        obj_santa["blu"].id = 2; // santa[id], down[id]等
-        obj_santa["yel"].id = 3;
-        obj_santa["gre"].id = 4;
-        for (var color in obj_santa){
-            obj_santa[color].attr("src","image/santa" + obj_santa[color].id + "/1.png");
-            obj_santa[color].state = STATE_INIT;
-            obj_santa[color].image_id = 1; // 各種アニメーション用
-            obj_santa[color].show();
-        }
         // シグナルカウンタを初期化
-        for(var color in santa_sig){
-            santa_sig[color][k_up] = 0;
-            santa_sig[color][k_down] = 0;
-            santa_sig[color][k_left] = 0;
-            santa_sig[color][k_right] = 0;
-        }
+        // for(var color in santa_sig){
+        //     santa_sig[color][k_up] = 0;
+        //     santa_sig[color][k_down] = 0;
+        //     santa_sig[color][k_left] = 0;
+        //     santa_sig[color][k_right] = 0;
+        // }
         // for (var color in obj_window){
         //     // name
         //     obj_name[color].text(names[color]);
@@ -794,14 +826,15 @@ function init(names,window_pos){
         // 画像の読み込みタイミングによって位置がずれるので少し待つ
         setTimeout(function(){
             for (var color in obj_window){
-                // name
-                obj_name[color].text(names[color]);
-                obj_name[color].show();
-                set_name_pos(color);
-
                 // window
                 obj_window[color].image_id = 1;
                 obj_window[color].state = STATE_CLOSED_NOT_MOVE;
+            }
+            for (var uuid in obj_players) {
+                // name
+                // obj_players[uuid].name.text(uuid);
+                obj_players[uuid].img.show();
+                set_name_pos(obj_players[uuid]);
             }
         }, 50);
 

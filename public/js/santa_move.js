@@ -211,7 +211,7 @@ function debug(){
             " top:" + obj_players[uuid].img.css("top") +
             " left:" + obj_players[uuid].img.css("left");
         obj_players[uuid].message = str;
-        console.log(uuid, str)
+        // console.log(uuid, str)
         // santa_pos[color].text(str);
     }
 }

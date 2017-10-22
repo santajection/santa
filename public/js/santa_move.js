@@ -619,10 +619,10 @@ function reset_santa_pos(){
     var top  = 900;
     var left = SANTA_MARGIN;
     console.log("step" + step);
-    for (var color in obj_santa){
-        obj_santa[color].css("left", left);
-        obj_santa[color].css("top", top);
-        set_name_pos(color);
+    for (var uuid in obj_players){
+        obj_players[uuid].img.css("left", left);
+        obj_players[uuid].img.css("top", top);
+        set_name_pos(obj_players[uuid]);
         // obj_name[color].css("left", left + 30);
         // var santa_bottom_pos = px2int(obj_santa[color].css("top")) + px2int(obj_santa[color].css("height"));
         // obj_name[color].css("top", santa_bottom_pos + 30);
@@ -706,10 +706,10 @@ function setImages(){
     $("#window_gre").attr({src:"image/window/1.png"});
     $("#window_yel").attr({src:"image/window/1.png"});
 
-    $("#santa_red").attr({src:"image/santa1/1.png"});
-    $("#santa_blu").attr({src:"image/santa2/1.png"});
-    $("#santa_gre").attr({src:"image/santa4/1.png"});
-    $("#santa_yel").attr({src:"image/santa3/1.png"});
+    // $("#santa_red").attr({src:"image/santa1/1.png"});
+    // $("#santa_blu").attr({src:"image/santa2/1.png"});
+    // $("#santa_gre").attr({src:"image/santa4/1.png"});
+    // $("#santa_yel").attr({src:"image/santa3/1.png"});
 }
 
 $(function(){
@@ -717,10 +717,18 @@ $(function(){
     load_images();
     // console.log(num_images);
     dummy_uuids = {
-        1: 1,
-        2: 2,
-        3: 3,
-        4: 4
+        "one": {
+            color: "red"
+        },
+        "two": {
+            color: "yel"
+        },
+        "three": {
+            color: "blu"
+        },
+        "four": {
+            color: "gre"
+        }
     };
     waitUntil(function(){
         return num_loaded_images < num_images;
@@ -730,7 +738,9 @@ $(function(){
     // $("#game_box").mask("Waiting...", 1000);
 });
 
-function createUser(uuid) {
+var colorid = { "red": 1, "blu": 2, "yel": 3, "gre": 4 };
+
+function createUser(uuid, color) {
     body = document.getElementById("anime_box");
     // div = body.createElement("div")
     div = document.createElement('img');
@@ -763,7 +773,7 @@ function createUser(uuid) {
     return {
         x: 0,
         y: 0,
-        color: "red",
+        color: color,
         key: null,
         lock: false,
         name: obj_name,
@@ -772,7 +782,7 @@ function createUser(uuid) {
         img: obj,
         state: STATE_INIT,
         image_id: 1,
-        img_dir: 1 // [1,2,3,4]
+        img_dir: colorid[color] // [1,2,3,4]
     };
 }
 
@@ -790,7 +800,7 @@ function init(uuids,window_pos){
 
         // 各種オブジェクトの初期化
         for (uuid in uuids) {
-            obj_players[uuid] = createUser(uuid)
+            obj_players[uuid] = createUser(uuid, uuids[uuid].color)
             obj_players[uuid].img.attr("src","image/santa" + obj_players[uuid].img_dir + "/1.png");
             obj_players[uuid].img.show()
         }
@@ -849,9 +859,9 @@ function init(uuids,window_pos){
         HEIGHT = px2int(obj_animebox.css("height"));
 
         if (DEBUG_LEVEL > 0){
-            for (var color in obj_santa){
-                santa_pos[color] = $("<p>");
-                santa_pos[color].appendTo(obj_animebox);
+            for (var uuid in obj_players){
+                santa_pos[uuid] = $("<p>");
+                santa_pos[uuid].appendTo(obj_animebox);
             }
         }
 

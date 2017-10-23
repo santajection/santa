@@ -276,10 +276,18 @@ function createDummyUsers() {
 }
 
 function addSanta() {
+  var dummy_uuids = {};
+  var colors = ["red", "yel", "blu", "gre"];
+  for (var i = 0; i < 4; i++) {
+    uuid = Math.floor(Math.random() * 100000);
+    dummy_uuids[uuid] = { color: colors[uuid % colors.length] };
+  }
+  console.log("unei", dummy_uuids);
   SendMsg("message", {
     method: "addSanta",
     options: {},
-    users: createDummyUsers()
+    uuids: dummy_uuids,
+    timestamp: new Date()
   })
 }
 

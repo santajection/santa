@@ -41,6 +41,7 @@ var k_down = 40;
 var santa_sig = {red:{37:0,38:0,39:0,40:0}, blu:{37:0,38:0,39:0,40:0},
                  yel:{37:0,38:0,39:0,40:0}, gre:{37:0,38:0,39:0,40:0}};
 var color_id = { red: 1, yel: 3, blu: 2, gre: 4 };
+var colorid = { "red": 1, "blu": 2, "yel": 3, "gre": 4 };
 var santa_pos = {red:undefined, blu:undefined, yel:undefined, gre:undefined};
 var santa_lock = {red:false, blu:false, gre:false, yel:false};
 
@@ -577,8 +578,8 @@ function reset_santa_pos(){
     console.log("step" + step);
     for (var uuid in obj_players) {
         left = SANTA_MARGIN + (color_id[obj_players[uuid].color]-1) * step
-        obj_players[uuid].img.css("left", left);
-        obj_players[uuid].img.css("top", top);
+        obj_players[uuid].img.css("left", (left + Math.random()*100));
+        obj_players[uuid].img.css("top", (top + Math.random()*100));
         set_name_pos(obj_players[uuid]);
     }
 }
@@ -671,7 +672,15 @@ $(function(){
         init(dummy_uuids)});
 });
 
-var colorid = { "red": 1, "blu": 2, "yel": 3, "gre": 4 };
+function addSanta(uuids) {
+    for (uuid in uuids) {
+        user = createUser(uuid, uuids[uuid].color);
+        obj_players[uuid] = user;
+        obj_players[uuid].img.attr("src","image/santas" + obj_players[uuid].img_dir + "/1.png");
+        obj_players[uuid].img.show()
+    }
+    reset_santa_pos();
+}
 
 function createUser(uuid, color) {
     body = document.getElementById("anime_box");
@@ -729,7 +738,7 @@ function init(uuids,window_pos){
         // 各種オブジェクトの初期化
         for (uuid in uuids) {
             obj_players[uuid] = createUser(uuid, uuids[uuid].color)
-            obj_players[uuid].img.attr("src","image/santa" + obj_players[uuid].img_dir + "/1.png");
+            obj_players[uuid].img.attr("src","image/santas" + obj_players[uuid].img_dir + "/1.png");
             obj_players[uuid].img.show()
         }
         window_pos = {

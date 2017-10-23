@@ -18,7 +18,8 @@ socket.on('message', function(msg) {
    document.getElementById("receiveMsg").innerHTML = msg.value;
    if(msg.value){
       try{
-         var msgObj = JSON.parse(msg.value);
+        var msgObj = JSON.parse(msg.value);
+        console.log(msgObj, msgObj.method);
          switch(msgObj.method){
            case "santa_move":
             //  console.log(msgObj.options["santa_keys"]);
@@ -69,7 +70,8 @@ socket.on('message', function(msg) {
                timeUp();
                break;
             case "addSanta":
-              addSanta();
+              console.log("comu", msgObj.uuids);
+              addSanta(msgObj.uuids);
               break;
             case "toujou":
              console.log("color" + msgObj.color + " name=" +msgObj.name);

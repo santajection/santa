@@ -20,25 +20,19 @@ socket.on('message', function(msg) {
       try{
          var msgObj = JSON.parse(msg.value);
          switch(msgObj.method){
-            case "santa_move":
-             for (var color in _communication_keys){
-                 if (msgObj.options["santa_keys"][color]){
-             // console.log(color + ":"+msgObj.options["santa_keys"][color]);
-                 _communication_keys[color][k_up] = msgObj.options["santa_keys"][color];
-                     }
-             }
-//                var direction = msgObj.options["direction"];
-//                var color = msgObj.options["color"];
-//                if(direction == "left")
-//                  _communication_keys[color][k_left] = true;
-//                if(direction == "right")
-//                  _communication_keys[color][k_right] = true;
-//                if(direction == "up")
-// //                upMultiple(20, color);
-//                  _communication_keys[color][k_up] = true;
-//                if(direction == "down")
-//                  _communication_keys[color][k_down] = true;
-               break;
+           case "santa_move":
+            //  console.log(msgObj.options["santa_keys"]);
+                for (var uuid in msgObj.options["santa_keys"]) {
+                  _communication_keys[uuid] = { k_up: msgObj.options["santa_keys"][uuid] };
+                }
+                // console.log(_communication_keys);
+              //   for (var color in _communication_keys){
+              //     if (msgObj.options["santa_keys"][color]){
+              // // console.log(color + ":"+msgObj.options["santa_keys"][color]);
+              //     _communication_keys[color][k_up] = msgObj.options["santa_keys"][color];
+              //     }
+              //   }
+                break;
             case "gadget_move":
                var gesture = msgObj.options["gesture"];
                var gadgetNum = msgObj.options["gadgetNum"];
@@ -54,7 +48,7 @@ socket.on('message', function(msg) {
                colorToGadgetMap[color][index] = gadgetNum;
                break;
             case "init":
-               init(msgObj.names, msgObj.pos);
+               init(msgObj.uuids, msgObj.pos);
                break;
             case "pre":
                pre();
@@ -74,6 +68,9 @@ socket.on('message', function(msg) {
             case "timeUp":
                timeUp();
                break;
+            case "addSanta":
+              addSanta();
+              break;
             case "toujou":
              console.log("color" + msgObj.color + " name=" +msgObj.name);
              toujou_start(msgObj.color, msgObj.name);

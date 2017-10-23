@@ -547,8 +547,8 @@ function movePlane() {
         console.log(uuid, move_keys[uuid]);
         var player = obj_players[uuid]
         var toppos = px2int(player.img.css("top"));
-        var windowpos = px2int(player.img.css("top"));
         var obj_window = obj_windows[player.color];
+        var windowpos = px2int(obj_window.css("top"));
         var window_bottom_pos = windowpos + px2int(obj_window.css("height"));
 
         // console.log(obj_window[color].state);

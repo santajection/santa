@@ -76,7 +76,8 @@ var k_right = 39;
 var k_down = 40;
 var santa_sig = {red:{37:0,38:0,39:0,40:0}, blu:{37:0,38:0,39:0,40:0},
                  yel:{37:0,38:0,39:0,40:0}, gre:{37:0,38:0,39:0,40:0}};
-var color_id = {red:1,blu:2,yel:3,gre:4};
+var color_id = { red: 1, yel: 3, blu: 2, gre: 4 };
+// var colors = ["red", "blue", "yel", "gre"] // サンタの並び順
 var santa_pos = {red:undefined, blu:undefined, yel:undefined, gre:undefined};
 var santa_lock = {red:false, blu:false, gre:false, yel:false};
 
@@ -441,7 +442,7 @@ function santa_hitstop(player){
     var prev_src = player.img.attr("src");
     // console.log(id);
     // var down_src = "image/down" + id + "/down" + id + ".png";
-    player.img.attr({src:"image/down" + player.image_id + "/1.png"});
+    player.img.attr({src:"image/down" + player.img_dir + "/1.png"});
     //console.log(bgm_hit);
     SendMsg("unnei",{name:"hit",method:"play"});
     //    bgm_hit.play();
@@ -543,7 +544,8 @@ function movePlane() {
     //     move_keys.red[direction] = true;
     // }
     _communication_keys = {};
-    for (var uuid in move_keys) {
+    // for (var uuid in move_keys) {
+    for (var uuid in obj_players) {
         console.log(uuid, move_keys[uuid]);
         var player = obj_players[uuid]
         var toppos = px2int(player.img.css("top"));
@@ -551,10 +553,7 @@ function movePlane() {
         var windowpos = px2int(obj_window.css("top"));
         var window_bottom_pos = windowpos + px2int(obj_window.css("height"));
 
-        // console.log(obj_window[color].state);
-        // if (color == "red"){
-        // console.log("toppos="+toppos + " windowpos="+windowpos);
-        //     }
+        // サンタが窓に近づいているかチェック
         if (obj_window.state != STATE_CLOSED_AND_FINISHED &&
             obj_window.state == STATE_CLOSED_NOT_MOVE &&
             Math.abs(toppos - window_bottom_pos) < dist_window_santa) {
@@ -564,11 +563,14 @@ function movePlane() {
             moveWindowColor(player.color);
         }
 
+        // ゴールしたかチェック
         if (toppos <= GOAL_LINE && player.state == STATE_MOVING){
             player.img.stop();
             goalAnimation(player.color); //todo
             // alert();
         }
+
+        // サンタとトナカイがぶつかったかチェック
         if (player.state == STATE_MOVING &&
             obj_window.state == STATE_OPENED &&
             windowpos + 100 <= toppos && toppos <= windowpos + 250){
@@ -579,8 +581,8 @@ function movePlane() {
             santa_hitstop(player);
         }
 
+        // 移動できる状態なら移動する
         if (player.state == STATE_MOVING){
-
             for (var direction in move_keys[uuid]) {
                 // シグナルが入っていないような異常系は除外
                 if (!move_keys[uuid].hasOwnProperty(direction)) continue;
@@ -597,6 +599,8 @@ function movePlane() {
 
             }
         }
+
+        // サンタの動きに合わせて名前を移動
             if (player.state != STATE_WAIT){
                 set_name_pos(player);
             }
@@ -625,16 +629,17 @@ function reset_santa_pos(){
     var step = (WIDTH - SANTA_MARGIN) / 4;
     // var top  = 700;
     var top  = 900;
-    var left = SANTA_MARGIN;
+    // var left = SANTA_MARGIN - 2*step;
     console.log("step" + step);
-    for (var uuid in obj_players){
+    for (var uuid in obj_players) {
+        left = SANTA_MARGIN + (color_id[obj_players[uuid].color]-1) * step
         obj_players[uuid].img.css("left", left);
         obj_players[uuid].img.css("top", top);
         set_name_pos(obj_players[uuid]);
         // obj_name[color].css("left", left + 30);
         // var santa_bottom_pos = px2int(obj_santa[color].css("top")) + px2int(obj_santa[color].css("height"));
         // obj_name[color].css("top", santa_bottom_pos + 30);
-        left += step;
+        // left += step;
     }
 }
 function getRandomInt(min, max) {
@@ -729,10 +734,10 @@ $(function(){
             color: "red"
         },
         "two": {
-            color: "yel"
+            color: "blu"
         },
         "three": {
-            color: "blu"
+            color: "yel"
         },
         "four": {
             color: "gre"

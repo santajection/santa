@@ -329,9 +329,9 @@ function santa_warp(color){
 function santa_goal_anime(player){
     // サンタよじ登りアニメーション
     // console.log("santa_goal_anime:" + obj_santa[color].image_id);
-     if (player.img.image_id >= 12){
+     if (player.image_id >= 12){
         player.image_id = 0;
-        santa_goal_sori_ride(player);
+        santa_goal_sori_ride(player.uuid);
     } else {
         if (player.image_id % 3 == 0){
             SendMsg("unnei",{name:"yojinobori",method:"play"});
@@ -344,7 +344,7 @@ function santa_goal_anime(player){
     }
 }
 
-function santa_goal1(color){
+function santa_goal1(player){
     // 状態変更(操作不可に)
     // よじのぼり
     // そりへ座る
@@ -413,7 +413,7 @@ function showGoalText(player){
     goal_text.appendTo(obj_animebox);
     goal_text.css("top", 200);
     console.log("color_id["+player.color+"]="+color_id[player.color] + " margin="+SANTA_MARGIN);
-    console.log(color_id[color] * step);
+    console.log(player.img_dir * step);
     goal_text.css("left", 20 + SANTA_MARGIN + (color_id[player.color]-1) * step );
 }
 
@@ -548,7 +548,7 @@ function movePlane() {
     _communication_keys = {};
     // for (var uuid in move_keys) {
     for (var uuid in obj_players) {
-        console.log(uuid, move_keys[uuid]);
+        // console.log(uuid, move_keys[uuid]);
         var player = obj_players[uuid]
         var toppos = px2int(player.img.css("top"));
         var obj_window = obj_windows[player.color];
@@ -787,6 +787,7 @@ function createUser(uuid, color) {
     document.getElementsByTagName("body").item(0);
 
     return {
+        uuid: uuid,
         x: 0,
         y: 0,
         color: color,

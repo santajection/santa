@@ -393,8 +393,12 @@ function hit_animation(player, prev_src){
 
 function santa_hitstop(player){
     // トナカイとぶつかった時のモーション
+    console.log("HITTED:" + player.state);
+    player.state = STATE_HITTED;
+    player.img.stop();
     // 操作不可
-	  var pos_top = px2int(player.img.css("top"));
+    var pos_top = px2int(player.img.css("top"));
+    // 落ちる処理
     player.img.animate({top: pos_top + 200}, 300);
     set_name_pos(player);
     var prev_src = player.img.attr("src");
@@ -523,10 +527,6 @@ function movePlane() {
         if (player.state == STATE_MOVING &&
             obj_window.state == STATE_OPENED &&
             windowpos + 100 <= toppos && toppos <= windowpos + 250){
-            // トナカイとぶつかった
-            console.log("HITTED:" + player.state);
-            player.state = STATE_HITTED;
-            player.img.stop();
             santa_hitstop(player);
         }
 
@@ -729,6 +729,26 @@ function createUser(uuid, color) {
         image_id: 1,
         img_dir: colorid[color] // [1,2,3,4]
     };
+}
+
+// 特徴的な動きをする
+function specialMove(uuids) {
+    for (uuid in uuids) {
+        var player = obj_players[uuid];
+        // トナカイとぶつかった時のモーションをその場でする
+        console.log("HITTED:" + player.state);
+        player.state = STATE_HITTED;
+        player.img.stop();
+        // 操作不可
+        var pos_top = px2int(player.img.css("top"));
+        // 落ちる処理
+        // player.img.animate({top: pos_top + 200}, 300);
+        set_name_pos(player);
+        var prev_src = player.img.attr("src");
+        player.img.attr({src:"image/down" + player.img_dir + "/1.png"});
+        SendMsg("unnei",{name:"hit",method:"play"});
+        hit_animation(player, prev_src);
+    }
 }
 
 function init(uuids,window_pos){
@@ -1311,8 +1331,7 @@ function toujou(id, name){
 
 }
 
-
-function readyGo(){
+function readyGo(delay1=5300, delay2=3200){
     // プレ、タイトル、説明用画像を消す
     $("#screen_pre").hide();
     $("#screen_title").hide();
@@ -1327,8 +1346,8 @@ function readyGo(){
         $("#screen_yoi").show();
 
         // どん!
-        setTimeout("readyGo2()",3200);
-    }, 5300);
+        setTimeout("readyGo2()",delay2);
+    }, delay1);
 }
 
 // よーいどん用

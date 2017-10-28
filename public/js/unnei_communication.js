@@ -268,6 +268,18 @@ function timeUp(){
 	SendMsg("message", {method:"timeUp", options:{}});
 }
 
+function specialMove() {
+  // console.log("specialMove", $("#specialmove_uuid").val())
+  uuids = {};
+  uuid = $("#specialmove_uuid").val();
+  uuids[uuid] = uuid;
+  SendMsg("message", { method: "specialMove", uuids: uuids });
+}
+
+function dev_readyGo() {
+  SendMsg("message", { method: "dev_readyGo" });
+}
+
 function createDummyUsers() {
   return {
     timestamp: new Date(),

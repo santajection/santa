@@ -69,6 +69,12 @@ socket.on('message', function(msg) {
             case "timeUp":
                timeUp();
                break;
+            case "specialMove":
+              specialMove(msgObj.uuids);
+              break;
+            case "dev_readyGo":
+              readyGo(0, 0);
+              break;
             case "addSanta":
               console.log("comu", msgObj.uuids);
               addSanta(msgObj.uuids);

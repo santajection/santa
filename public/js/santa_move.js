@@ -41,7 +41,6 @@ var k_down = 40;
 var santa_sig = {red:{37:0,38:0,39:0,40:0}, blu:{37:0,38:0,39:0,40:0},
                  yel:{37:0,38:0,39:0,40:0}, gre:{37:0,38:0,39:0,40:0}};
 var color_id = { red: 1, yel: 3, blu: 2, gre: 4 };
-var colorid = { "red": 1, "blu": 2, "yel": 3, "gre": 4 };
 var santa_pos = {red:undefined, blu:undefined, yel:undefined, gre:undefined};
 var santa_lock = {red:false, blu:false, gre:false, yel:false};
 
@@ -727,7 +726,7 @@ function createUser(uuid, color) {
         img: obj,
         state: STATE_INIT,
         image_id: 1,
-        img_dir: colorid[color] // [1,2,3,4]
+        img_dir: color_id[color] // [1,2,3,4]
     };
 }
 

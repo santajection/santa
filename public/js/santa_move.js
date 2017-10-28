@@ -87,11 +87,13 @@ function load_images(){
         // santa 本体
         for (var j = 1; j <= 10; j++){
             image_paths.push(img_dir + "santa" + i + "/"+ j +".png");
+            image_paths.push(img_dir + "santa" + i + "s/"+ j +".png");
         }
 
         // santa hit
         for (var j = 1; j <= 2; j++){
             image_paths.push(img_dir + "down" + i + "/"+ j +".png");
+            image_paths.push(img_dir + "down" + i + "s/"+ j +".png");
         }
 
         // santa goal
@@ -102,11 +104,13 @@ function load_images(){
         // santa sori ride
         for (var j = 1; j <= 11; j++){
             image_paths.push(img_dir + "up" + i + "/"+ j +".png");
+            image_paths.push(img_dir + "up" + i + "s/"+ j +".png");
         }
 
         // santa warp
         for (var j = 1; j <= 11; j++){
             image_paths.push(img_dir + "warp" + i + "/"+ j +".png");
+            image_paths.push(img_dir + "warp" + i + "s/"+ j +".png");
         }
     }
     // sleigh

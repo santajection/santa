@@ -41,7 +41,6 @@ var k_down = 40;
 var santa_sig = {red:{37:0,38:0,39:0,40:0}, blu:{37:0,38:0,39:0,40:0},
                  yel:{37:0,38:0,39:0,40:0}, gre:{37:0,38:0,39:0,40:0}};
 var color_id = { red: 1, yel: 3, blu: 2, gre: 4 };
-var colorid = { "red": 1, "blu": 2, "yel": 3, "gre": 4 };
 var santa_pos = {red:undefined, blu:undefined, yel:undefined, gre:undefined};
 var santa_lock = {red:false, blu:false, gre:false, yel:false};
 
@@ -88,11 +87,13 @@ function load_images(){
         // santa 本体
         for (var j = 1; j <= 10; j++){
             image_paths.push(img_dir + "santa" + i + "/"+ j +".png");
+            image_paths.push(img_dir + "santa" + i + "s/"+ j +".png");
         }
 
         // santa hit
         for (var j = 1; j <= 2; j++){
             image_paths.push(img_dir + "down" + i + "/"+ j +".png");
+            image_paths.push(img_dir + "down" + i + "s/"+ j +".png");
         }
 
         // santa goal
@@ -103,11 +104,13 @@ function load_images(){
         // santa sori ride
         for (var j = 1; j <= 11; j++){
             image_paths.push(img_dir + "up" + i + "/"+ j +".png");
+            image_paths.push(img_dir + "up" + i + "s/"+ j +".png");
         }
 
         // santa warp
         for (var j = 1; j <= 11; j++){
             image_paths.push(img_dir + "warp" + i + "/"+ j +".png");
+            image_paths.push(img_dir + "warp" + i + "s/"+ j +".png");
         }
     }
     // sleigh
@@ -311,7 +314,7 @@ function santa_goal1(player){
     // そりへ座る
     // 状態変更(手を触れるように)
     player.state = STATE_WAIT;
-    player.img.attr({src:"image/up" + player.img_dir +"/1.png"});
+    player.img.attr({src:"image/up" + player.img_dir +"s/1.png"});
     console.log("santa_goal1");
     santa_goal_anime(player);
     // anime
@@ -393,12 +396,16 @@ function hit_animation(player, prev_src){
 
 function santa_hitstop(player){
     // トナカイとぶつかった時のモーション
+    console.log("HITTED:" + player.state);
+    player.state = STATE_HITTED;
+    player.img.stop();
     // 操作不可
-	  var pos_top = px2int(player.img.css("top"));
+    var pos_top = px2int(player.img.css("top"));
+    // 落ちる処理
     player.img.animate({top: pos_top + 200}, 300);
     set_name_pos(player);
     var prev_src = player.img.attr("src");
-    player.img.attr({src:"image/down" + player.img_dir + "/1.png"});
+    player.img.attr({src:"image/down" + player.img_dir + "s/1.png"});
     SendMsg("unnei",{name:"hit",method:"play"});
     hit_animation(player, prev_src);
 }
@@ -523,10 +530,6 @@ function movePlane() {
         if (player.state == STATE_MOVING &&
             obj_window.state == STATE_OPENED &&
             windowpos + 100 <= toppos && toppos <= windowpos + 250){
-            // トナカイとぶつかった
-            console.log("HITTED:" + player.state);
-            player.state = STATE_HITTED;
-            player.img.stop();
             santa_hitstop(player);
         }
 
@@ -665,18 +668,24 @@ $(function(){
             color: "gre"
         }
     };
+    window_pos = {
+        "red": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+        "blu": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+        "gre": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+        "yel": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
+    };
     waitUntil(function(){
         return num_loaded_images < num_images;
     }, 150, function(){
         setImages();
-        init(dummy_uuids)});
+        init(dummy_uuids, window_pos)});
 });
 
 function addSanta(uuids) {
     for (uuid in uuids) {
         user = createUser(uuid, uuids[uuid].color);
         obj_players[uuid] = user;
-        obj_players[uuid].img.attr("src","image/santas" + obj_players[uuid].img_dir + "/1.png");
+        obj_players[uuid].img.attr("src","image/santa" + obj_players[uuid].img_dir + "s/1.png");
         obj_players[uuid].img.show()
     }
     reset_santa_pos();
@@ -721,8 +730,28 @@ function createUser(uuid, color) {
         img: obj,
         state: STATE_INIT,
         image_id: 1,
-        img_dir: colorid[color] // [1,2,3,4]
+        img_dir: color_id[color] // [1,2,3,4]
     };
+}
+
+// 特徴的な動きをする
+function specialMove(uuids) {
+    for (uuid in uuids) {
+        var player = obj_players[uuid];
+        // トナカイとぶつかった時のモーションをその場でする
+        console.log("HITTED:" + player.state);
+        player.state = STATE_HITTED;
+        player.img.stop();
+        // 操作不可
+        var pos_top = px2int(player.img.css("top"));
+        // 落ちる処理
+        // player.img.animate({top: pos_top + 200}, 300);
+        set_name_pos(player);
+        var prev_src = player.img.attr("src");
+        player.img.attr({src:"image/down" + player.img_dir + "s/1.png"});
+        SendMsg("unnei",{name:"hit",method:"play"});
+        hit_animation(player, prev_src);
+    }
 }
 
 function init(uuids,window_pos){
@@ -738,15 +767,9 @@ function init(uuids,window_pos){
         // 各種オブジェクトの初期化
         for (uuid in uuids) {
             obj_players[uuid] = createUser(uuid, uuids[uuid].color)
-            obj_players[uuid].img.attr("src","image/santas" + obj_players[uuid].img_dir + "/1.png");
+            obj_players[uuid].img.attr("src","image/santa" + obj_players[uuid].img_dir + "s/1.png");
             obj_players[uuid].img.show()
         }
-        window_pos = {
-                "red":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-                "blu":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-                "gre":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-                "yel":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
-        };
         obj_windows = {
             red : $("#window_red"),
             blu : $("#window_blu"),
@@ -1311,8 +1334,7 @@ function toujou(id, name){
 
 }
 
-
-function readyGo(){
+function readyGo(delay1=5300, delay2=3200){
     // プレ、タイトル、説明用画像を消す
     $("#screen_pre").hide();
     $("#screen_title").hide();
@@ -1327,8 +1349,8 @@ function readyGo(){
         $("#screen_yoi").show();
 
         // どん!
-        setTimeout("readyGo2()",3200);
-    }, 5300);
+        setTimeout("readyGo2()",delay2);
+    }, delay1);
 }
 
 // よーいどん用

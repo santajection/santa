@@ -3,12 +3,13 @@
 
 
 var obj_santa;
-var obj_window;
+var obj_windows;
 var obj_name;
 var obj_tonakai;
 var obj_sori;
 var obj_animebox;
 var obj_up;
+var obj_players = {}; // {uuid: {x, y, color, key, lock, name, signal, message}} // messageはデバッグメッセージ
 var intro_santa;
 var intro_name;
 var WIDTH;
@@ -30,43 +31,7 @@ var STATE_CLOSED_AND_MOVE = 6; // 窓は閉まっていてアニメーション�
 var STATE_OPENED = 7; // 窓は相手なくアニメーションも動いていない
 var STATE_CLOSED_AND_FINISHED = 8; // 窓は一回相手もうずっと閉まっている状態
 
-// var BGM_Communication = function(name){
-//     this.name = name;
-// }
-
-// BGM_Communication.prototype.play = function(){
-//     SendMsg("bgm",{name:this.name});
-// }
-// BGM_Communication.prototype.animate = function(attr, value){
-// //        obj_bgm.animate({volume: 1}, 2000);
-//     SendMsg("bgm",{name:this.name});
-// }
-// BGM_Communication.prototype.setValue = function(attr, value){
-//     SendMsg("bgm",{name:this.name, method:attr, arg:value});
-
-// }
-
-
-
-// var obj_bgm;
-// var bgm_play = new BGM_Communication("play");
-// var bgm_hit = new BGM_Communication("hit");
-// var bgm_goal = new BGM_Communication("goal");
-// var bgm_yojinobori = new BGM_Communication("yojinobori");
-// var bgm_warp = new BGM_Communication("warp");
-// // var bgm_fin = new BGM_Communication("");
-// var bgm_fin = new BGM_Communication("fin");
-// var bgm_start = new BGM_Communication("start");
-
-function moveleft(){
-    console.log(obj);
-    // console.log(obj.position().left);
-    $(obj).animate({"left":obj.position().left + 20});
-    // obj.position().left += 5;
-}
-
-
-var _communication_keys = {red:{},blu:{},yel:{},gre:{}};
+var _communication_keys = {};
 
 var keys = {};
 var k_left = 37;
@@ -75,13 +40,11 @@ var k_right = 39;
 var k_down = 40;
 var santa_sig = {red:{37:0,38:0,39:0,40:0}, blu:{37:0,38:0,39:0,40:0},
                  yel:{37:0,38:0,39:0,40:0}, gre:{37:0,38:0,39:0,40:0}};
-var color_id = {red:1,blu:2,yel:3,gre:4};
+var color_id = { red: 1, yel: 3, blu: 2, gre: 4 };
+var colorid = { "red": 1, "blu": 2, "yel": 3, "gre": 4 };
 var santa_pos = {red:undefined, blu:undefined, yel:undefined, gre:undefined};
 var santa_lock = {red:false, blu:false, gre:false, yel:false};
 
-// var santaL_src = "image/santa_pack/red_l.png";
-// var santaR_src = "image/santa_pack/red_r.png";
-// var tonakaiL_src = "image/santa_pack/blue_l.png";
 var tonakai_src = "image/tonakai/tonakai";
 
 
@@ -199,36 +162,44 @@ function next_image_src(cur_image_src, num_image){
 
 function debug(){
     if (DEBUG_LEVEL == 0) return;
-    for (var color in obj_santa){
+    // console.log(_communication_keys)
+    for (var uuid in obj_players) {
+        //console.log("debug", color);
         // santa_pos[color] = $("<p>");
-        santa_pos[color].css("top", obj_santa[color].css("top"));
-        santa_pos[color].css("left", obj_santa[color].css("left"));
-        var str = color +
-            " top:" + obj_santa[color].css("top") +
-            " left:" + obj_santa[color].css("left");
-        santa_pos[color].text(str);
-        // console.log(santa_pos[color]);
-        // alert("");
+        obj_players[uuid].img.css("top", obj_players[uuid].img.css("top"));
+        obj_players[uuid].img.css("left", obj_players[uuid].img.css("left"));
+        // santa_pos[color].css("top", obj_santa[color].css("top"));
+        // santa_pos[color].css("left", obj_santa[color].css("left"));
+        var str = uuid +
+            " top:" + obj_players[uuid].img.css("top") +
+            " left:" + obj_players[uuid].img.css("left");
+        obj_players[uuid].message = str;
+        // console.log(uuid, str)
+        // santa_pos[color].text(str);
     }
 }
 
-function santamove(color, direction){
+function santamove(player, direction){
 
     // 1回呼ばれる毎にシグナルを追加する
-    santa_sig[color][direction] += 1;
+    player.signal[direction] += 1;
 
-    if(santa_lock[color]){
+    if(player.lock){
         return;
     }
 
     // 動きカウンタがしきい値以上ならば動かす
-    var sum = santa_sig[color][k_up] + santa_sig[color][k_down] + santa_sig[color][k_right] + santa_sig[color][k_left];
+    var sum = 0;
+    for (d in player.signal) {
+        sum += player.signal[d];
+    }
+    // var sum = santa_sig[color][k_up] + santa_sig[color][k_down] + santa_sig[color][k_right] + santa_sig[color][k_left];
     if (sum >= frame_per_signal){
 
         // アニメーション制御間隔：　設定値「1回の切替枚数imgs_per_frame」×100ms毎にアニメーションを制御する
-        santa_lock[color] = true;
+        player.lock = true;
         setTimeout(function(){
-            santa_lock[color] = false; 
+            player.lock = false;
         }, imgs_per_frame * 100);
 
         //
@@ -236,21 +207,21 @@ function santamove(color, direction){
         //
 
         // 下向きと右向きのシグナルの総和を数える
-        var left_count = santa_sig[color][k_right] - santa_sig[color][k_left];
-        var top_count  = santa_sig[color][k_down] - santa_sig[color][k_up];
+        var left_count = player.signal.k_right - player.signal.k_left;
+        var top_count  = player.signal.k_down - player.signal.k_up;
         if (left_count > 0) {
-            santa_sig[color][k_right] = santa_sig[color][k_right] - santa_sig[color][k_left];
-            santa_sig[color][k_left] = 0;
+            player.signal[k_right] = player.signal.k_right - player.signal.k_left;
+            player.signal[k_left] = 0;
         } else {
-            santa_sig[color][k_right] = 0;
-            santa_sig[color][k_left] = santa_sig[color][k_left] - santa_sig[color][k_right];               
+            player.signal[k_right] = 0;
+            player.signal[k_left] = player.signal.k_left - player.signal.k_right;
         }
         if (top_count > 0) {
-            santa_sig[color][k_down] = santa_sig[color][k_down] - santa_sig[color][k_up];
-            santa_sig[color][k_up] = 0;
+            player.signal[k_down] = player.signal.k_down - player.signal.k_up;
+            player.signal[k_up] = 0;
         } else {
-            santa_sig[color][k_down] = 0;
-            santa_sig[color][k_up] = santa_sig[color][k_up] - santa_sig[color][k_down];               
+            player.signal[k_down] = 0;
+            player.signal[k_up] = player.signal.k_up - player.signal.k_down;
         }
 
         //
@@ -270,7 +241,7 @@ function santamove(color, direction){
         }
 
         // たくさんシグナルが来れば来るほどたくさん進む
-        obj_santa[color].animate(
+        player.img.animate(
             {
                 left: "+=" + move_per_signal * left_offset,
                 top:  "+=" + move_per_signal * top_offset
@@ -280,14 +251,14 @@ function santamove(color, direction){
 
         // 進んだ分だけシグナルを消費する
         if(top_count > 0) {
-            santa_sig[color][k_down] -= top_offset;
+            player.signal.k_down -= top_offset;
         } else {
-            santa_sig[color][k_up] -= Math.abs(top_offset);                
+            player.signal.k_up -= Math.abs(top_offset);
         }
         if(left_count > 0) {
-            santa_sig[color][k_right] -= left_offset;
+            player.signal.k_right -= left_offset;
         } else {
-            santa_sig[color][k_left] -= Math.abs(left_offset);                
+            player.signal.k_left -= Math.abs(left_offset);
         }
 
         //
@@ -300,13 +271,13 @@ function santamove(color, direction){
         // 画像の差替
         for(var idx = 1; idx <= imgs_per_frame * santa_speed; idx++){
             setTimeout(function(){
-                if(obj_santa[color].state == STATE_MOVING){
-                    obj_santa[color].attr({
-                        src: next_image_src(obj_santa[color].attr("src"), 10) //10枚で1周期 
+                if(player.state == STATE_MOVING){
+                    player.img.attr({
+                        src: next_image_src(player.img.attr("src"), 10) //10枚で1周期
                     });
                 }
             }, 100 * idx / santa_speed); // 基本は100msごとに画像変更。2倍速なら50ms毎に画像変更。
-        } 
+        }
     }
 }
 
@@ -316,61 +287,63 @@ function santa_warp(color){
     // 2. 上方画面外からそりへ
 }
 
-function santa_goal_anime(color){
+function santa_goal_anime(player){
     // サンタよじ登りアニメーション
     // console.log("santa_goal_anime:" + obj_santa[color].image_id);
-     if (obj_santa[color].image_id >= 12){
-        obj_santa[color].image_id = 0;
-        santa_goal_sori_ride(color);
+     if (player.image_id >= 12){
+        player.image_id = 0;
+        santa_goal_sori_ride(player.uuid);
     } else {
-        if (obj_santa[color].image_id % 3 == 0){
+        if (player.image_id % 3 == 0){
             SendMsg("unnei",{name:"yojinobori",method:"play"});
             //bgm_yojinobori.play();
         }
-        change_image_src(obj_santa[color], obj_santa[color].image_id);
-        obj_santa[color].image_id++;
-        setTimeout(function(){santa_goal_anime(color);}, 100);
+        change_image_src(player.img, player.image_id);
+        player.image_id++;
+        setTimeout(function(){santa_goal_anime(player);}, 100);
         // setTimeout("santa_goal_anime("+color+")", 100);
     }
 }
 
-function santa_goal1(color){
+function santa_goal1(player){
     // 状態変更(操作不可に)
     // よじのぼり
     // そりへ座る
     // 状態変更(手を触れるように)
-    obj_santa[color].state = STATE_WAIT;
-    obj_santa[color].attr({src:"image/up" + obj_santa[color].id +"/1.png"});
+    player.state = STATE_WAIT;
+    player.img.attr({src:"image/up" + player.img_dir +"/1.png"});
     console.log("santa_goal1");
-    santa_goal_anime(color);
+    santa_goal_anime(player);
     // anime
 }
 
-function santa_goal_sori_ride(color){
+function santa_goal_sori_ride(uuid) {
+    var player = obj_players[uuid];
     // そりに乗るまではサンタはそりの前面にいるが
     // そりに乗る時はサンタはそりの背面にいるようにする
-    obj_name[color].hide();
-    obj_santa[color].css('z-index', Number($("#sori").css('z-index'))-1);
-    console.log("color's z-index" + obj_santa[color].css('z-index'));
+    player.name.hide();
+    player.img.css('z-index', Number($("#sori").css('z-index'))-1);
+    console.log("color's z-index" + player.img.css('z-index'));
     // そりに乗る
     SendMsg("unnei",{name:"goal",method:"play"});
     //    bgm_goal.play();
-    if (obj_santa[color].image_id == 0){
+    if (player.image_id == 0){
         // 初期化処理
-        obj_santa[color].css("left", 370 + 50 * obj_santa[color].id);
-        obj_santa[color].css("bottom", 940);
-        obj_santa[color].css("top", "auto");
-        obj_santa[color].css("z-index", 1000);
-        obj_santa[color].image_id = 1;
+        player.img.css("left", 370 + 50 * color_id[player.color]);
+        player.img.css("bottom", 940);
+        player.img.css("top", "auto");
+        player.img.css("z-index", 1000);
+        player.image_id = 1;
     }
-     if (obj_santa[color].image_id > 7){
-         obj_santa[color].state = STATE_GOAL;
+     if (player.image_id > 7){
+         player.state = STATE_GOAL;
          if (gameTimer){
              // 時間切れでなくそりに乗る時はゴールテキストを表示
-             showGoalText(color);
+             showGoalText(player);
              var all_player_goal = true;
-             for(var color2 in obj_santa){
-                 if (obj_santa[color2].state != STATE_GOAL) {
+             // todo: 人数が多くなるとここの処理が重そう
+             for(var uuid2 in obj_players){
+                 if (obj_players[uuid2].state != STATE_GOAL) {
                      all_player_goal = false;
                  }
              }
@@ -378,66 +351,56 @@ function santa_goal_sori_ride(color){
                  // 全員がゴールしたなら
                  // 若干のタイムラグ後，タイムアップする
                  timeUp();
-                 // setTimeout(function(){timeUp();}, 500);
              }
          }
-        // obj_santa[color].image_id = 1;
-        // santa_goal_end(color);
     } else {
-        obj_santa[color].attr({
-            src:"image/goal" + obj_santa[color].id + "/" + obj_santa[color].image_id + ".png"
+        player.img.attr({
+            src:"image/goal" + player.img_dir + "/" + player.image_id + ".png"
             });
-        // change_image_src(obj_santa[color], obj_santa[color].image_id);
-        obj_santa[color].image_id++;
-        setTimeout(function(){santa_goal_sori_ride(color);}, 100);
-        // setTimeout("santa_goal_anime("+color+")", 100);
+        player.image_id++;
+        setTimeout(function(){santa_goal_sori_ride(uuid);}, 100);
     }
 }
 
-function showGoalText(color){
+function showGoalText(player){
     var goal_text = $("<img class='goal_text'>").attr("src", "image/goal/goal.png");
     goal_text.css("position", "absolute");
     var step = (WIDTH - SANTA_MARGIN) / 4;
     goal_text.appendTo(obj_animebox);
     goal_text.css("top", 200);
-    console.log("color_id["+color+"]="+color_id[color] + " margin="+SANTA_MARGIN);
-    console.log(color_id[color] * step);
-    goal_text.css("left", 20 + SANTA_MARGIN + (color_id[color]-1) * step );
+    console.log("color_id["+player.color+"]="+color_id[player.color] + " margin="+SANTA_MARGIN);
+    console.log(player.img_dir * step);
+    goal_text.css("left", 20 + SANTA_MARGIN + (color_id[player.color]-1) * step );
 }
 
 var hit_animation_num_iterate = 30;
-function hit_animation(color, prev_src){
+function hit_animation(player, prev_src){
     if (!gameTimer) {
         // 時間切れの時には強制終了
         return;
     }
-    if (obj_santa[color].image_id >= hit_animation_num_iterate){
-        obj_santa[color].image_id = 1;
-        obj_santa[color].attr({src:prev_src});
-        obj_santa[color].state=STATE_MOVING;
+    if (player.image_id >= hit_animation_num_iterate){
+        player.image_id = 1;
+        player.img.attr({src:prev_src});
+        player.state=STATE_MOVING;
     }else{
         // console.log(obj_santa[color]);
-        change_image_src(obj_santa[color], (obj_santa[color].image_id % 2)+1);
-        obj_santa[color].image_id++;
-        setTimeout(function(){hit_animation(color, prev_src);}, 100);
+        change_image_src(player.img, (player.image_id % 2)+1);
+        player.image_id++;
+        setTimeout(function(){hit_animation(player, prev_src);}, 100);
     }
 }
 
-function santa_hitstop(color){
+function santa_hitstop(player){
     // トナカイとぶつかった時のモーション
     // 操作不可
-	  var pos_top = px2int(obj_santa[color].css("top"));
-    obj_santa[color].animate({top: pos_top + 200}, 300);
-    set_name_pos(color);
-    var prev_src = obj_santa[color].attr("src");
-    var id = obj_santa[color].id;
-    // console.log(id);
-    // var down_src = "image/down" + id + "/down" + id + ".png";
-    obj_santa[color].attr({src:"image/down" + id + "/1.png"});
-    //console.log(bgm_hit);
+	  var pos_top = px2int(player.img.css("top"));
+    player.img.animate({top: pos_top + 200}, 300);
+    set_name_pos(player);
+    var prev_src = player.img.attr("src");
+    player.img.attr({src:"image/down" + player.img_dir + "/1.png"});
     SendMsg("unnei",{name:"hit",method:"play"});
-    //    bgm_hit.play();
-    hit_animation(color, prev_src);
+    hit_animation(player, prev_src);
 }
 
 
@@ -445,11 +408,11 @@ function px2int(pxstr){
     return Number(pxstr.substr(0, pxstr.length-2));
 }
 
-function goalAnimation(color){
-    obj_name[color].hide();
+function goalAnimation(player){
+    player.name.hide();
     // とりあえずはゴールの表示だ
     // goal_text.appendTo($("#game_box"));
-    santa_goal1(color);
+    santa_goal1(player);
     // clearInterval(game_timer);
 
     // ゴールに到達した時の処理
@@ -480,30 +443,31 @@ var window_anime_step = [
     [5, 0.1], [4, 0.1], [3, 0.1], [2, 0.1] // 0.4
 ]; // 全部で6.3sec
 
+// windowのアニメーション
 function moveWindowColor(color){
     // console.log("movewindow color:"+color + obj_window[color].image_id);
-    if (obj_window[color].image_id >= window_anime_step.length){
-        obj_window[color].image_id = 1;
-        change_image_src(obj_window[color], obj_window[color].image_id);
-        obj_window[color].state = STATE_CLOSED_AND_FINISHED;
+    if (obj_windows[color].image_id >= window_anime_step.length){
+        obj_windows[color].image_id = 1;
+        change_image_src(obj_windows[color], obj_windows[color].image_id);
+        obj_windows[color].state = STATE_CLOSED_AND_FINISHED;
     }else {
-        var image_id = window_anime_step[obj_window[color].image_id][0];
-        var wait_time = window_anime_step[obj_window[color].image_id][1];
+        var image_id = window_anime_step[obj_windows[color].image_id][0];
+        var wait_time = window_anime_step[obj_windows[color].image_id][1];
         if (image_id  >= 20 && image_id < 26){
             // 窓が開いた
-            obj_window[color].state = STATE_OPENED;
+            obj_windows[color].state = STATE_OPENED;
             // for debug
             // obj_window[color].css("border-width", "10px");
             // obj_window[color].css("border-color", "#000000");
             // obj_window[color].css("border-style", "solid");
         }else {
-            obj_window[color].state = STATE_CLOSED_AND_MOVE;
+            obj_windows[color].state = STATE_CLOSED_AND_MOVE;
             // obj_window[color].css("border-width", "");
             // obj_window[color].css("border-color", "");
             // obj_window[color].css("border-style", "");
         }
-        change_image_src(obj_window[color], image_id);
-        obj_window[color].image_id += 1;
+        change_image_src(obj_windows[color], image_id);
+        obj_windows[color].image_id += 1;
         setTimeout(function(){moveWindowColor(color);}, wait_time*1000);
     }
 }
@@ -512,10 +476,10 @@ function moveWindow(){
     // ランダムでウインドウを動かす
     var id = getRandomInt(0, 3);
     // id = 0 // for debug
-    var color = Object.keys(obj_window)[id];
-    if (obj_window[color].state == STATE_CLOSED_NOT_MOVE) {
-        obj_window[color].id = 1;
-        obj_window[color].state = STATE_CLOSED_AND_MOVE;
+    var color = Object.keys(obj_windows)[id];
+    if (obj_windows[color].state == STATE_CLOSED_NOT_MOVE) {
+        obj_windows[color].id = 1;
+        obj_windows[color].state = STATE_CLOSED_AND_MOVE;
         moveWindowColor(color);
     } else{
     console.log("moveWindow:" + color + " was selected, but it still be running");
@@ -529,100 +493,79 @@ function movePlane() {
         return;
     }
     var move_keys = _communication_keys;
-    for(var direction in keys){
-        if (!keys.hasOwnProperty(direction)) continue;
-        move_keys.red[direction] = true;
-    }
-    _communication_keys = {red:{},blu:{},yel:{},gre:{}};
-    for(var color in obj_santa){
-        var toppos = px2int(obj_santa[color].css("top"));
-        var windowpos = px2int(obj_window[color].css("top"));
-        var window_bottom_pos = windowpos + px2int(obj_window[color].css("height"));
+    _communication_keys = {};
+    // for (var uuid in move_keys) {
+    for (var uuid in obj_players) {
+        var player = obj_players[uuid]
+        var toppos = px2int(player.img.css("top"));
+        var obj_window = obj_windows[player.color];
+        var windowpos = px2int(obj_window.css("top"));
+        var window_bottom_pos = windowpos + px2int(obj_window.css("height"));
 
-        // console.log(obj_window[color].state);
-        // if (color == "red"){
-        // console.log("toppos="+toppos + " windowpos="+windowpos);
-        //     }
-        if (obj_window[color].state != STATE_CLOSED_AND_FINISHED &&
-            obj_window[color].state == STATE_CLOSED_NOT_MOVE &&
+        // サンタが窓に近づいているかチェック
+        if (obj_window.state != STATE_CLOSED_AND_FINISHED &&
+            obj_window.state == STATE_CLOSED_NOT_MOVE &&
             Math.abs(toppos - window_bottom_pos) < dist_window_santa) {
             // console.log("hoge");
-            obj_window[color].id = 1;
-            obj_window[color].state = STATE_CLOSED_AND_MOVE;
-            moveWindowColor(color);
+            obj_window.id = 1;
+            obj_window.state = STATE_CLOSED_AND_MOVE;
+            moveWindowColor(player.color);
         }
 
-        if (toppos <= GOAL_LINE && obj_santa[color].state == STATE_MOVING){
-            obj_santa[color].stop();
-            goalAnimation(color);
+        // ゴールしたかチェック
+        if (toppos <= GOAL_LINE && player.state == STATE_MOVING){
+            player.img.stop();
+            goalAnimation(player); //todo
             // alert();
         }
-        if (obj_santa[color].state == STATE_MOVING &&
-            obj_window[color].state == STATE_OPENED &&
+
+        // サンタとトナカイがぶつかったかチェック
+        if (player.state == STATE_MOVING &&
+            obj_window.state == STATE_OPENED &&
             windowpos + 100 <= toppos && toppos <= windowpos + 250){
             // トナカイとぶつかった
-            console.log("HITTED:" + obj_santa[color].state);
-            obj_santa[color].state = STATE_HITTED;
-            obj_santa[color].stop();
-            santa_hitstop(color);
+            console.log("HITTED:" + player.state);
+            player.state = STATE_HITTED;
+            player.img.stop();
+            santa_hitstop(player);
         }
 
-        if (obj_santa[color].state == STATE_MOVING){
-
-            for (var direction in move_keys[color]) {
+        // 移動できる状態なら移動する
+        if (player.state == STATE_MOVING){
+            for (var direction in move_keys[uuid]) {
                 // シグナルが入っていないような異常系は除外
-                if (!move_keys[color].hasOwnProperty(direction)) continue;
+                if (!move_keys[uuid].hasOwnProperty(direction)) continue;
 
                 // サンタを上下左右に動かす
-                santamove(color, direction);
+                santamove(player, direction);
 
                 // 上下左右にはみ出さないように補正
-                if (px2int(obj_santa[color].css("top")) < 0) obj_santa[color].css("top", 0);
-                if (px2int(obj_santa[color].css("left")) < 0) obj_santa[color].css("left", 0);
+                if (px2int(player.img.css("top")) < 0) player.img.css("top", 0);
+                if (px2int(player.img.css("left")) < 0) player.img.css("left", 0);
                 // 下方向だけははみ出しても良いようにする？
-                // if (px2int(obj_santa[color].css("top")) > HEIGHT - px2int(obj_santa[color].css("height"))) obj_santa[color].css("top", HEIGHT - px2int(obj_santa[color].css("height")));
-                if (px2int(obj_santa[color].css("left")) > WIDTH - px2int(obj_santa[color].css("width"))) obj_santa[color].css("left", WIDTH - px2int(obj_santa[color].css("width")));
+                if (px2int(player.img.css("left")) > WIDTH - px2int(player.img.css("width"))) player.img.css("left", WIDTH - px2int(player.img.css("width")));
 
             }
         }
-            if (obj_santa[color].state != STATE_WAIT){
-                set_name_pos(color);
+
+        // サンタの動きに合わせて名前を移動
+            if (player.state != STATE_WAIT){
+                set_name_pos(player);
             }
     }
 }
 
-function move_list(move_list){
-    console.log("move_list:" + move_list);
-    for (var i = 0; i < move_list.length; i++){
-        var duration = move_list[i]['duration'];
-        if (duration == undefined){
-            duration = 400;
-        }
-        obj_santa[red].animate({
-            left: "+="+move_list[i]['left'],
-            top: "+="+move_list[i]['top']
-        }, duration);
-    }
-}
+// santaの位置から逆算して、名前の表示を動かす
+function set_name_pos(player){
+    var left = px2int(player.img.css("left")) + px2int(player.img.css("width")) / 2 - px2int(player.name.css("width")) / 2 - 10;
+    var top = px2int(player.img.css("top")) + px2int(player.img.css("height")) + 30;
 
-function move_from_textarea(str){
-    console.log(str);
-    move_list(eval(str));
-}
-
-function set_name_pos(color){
-    // console.log(obj_santa[color].css("left"));
-    var left = px2int(obj_santa[color].css("left")) + px2int(obj_santa[color].css("width")) / 2 - px2int(obj_name[color].css("width")) / 2 - 10;
-    // console.log(obj_santa[color].css("left"));
-    var top = px2int(obj_santa[color].css("top")) + px2int(obj_santa[color].css("height")) + 30;
-
-    // console.log(obj_name[color].css("left") + " " + left);
-    obj_name[color].css("left", left);
-    var name_height = px2int(obj_name[color].css("height"));
+    player.name.css("left", left);
+    var name_height = px2int(player.name.css("height"));
     if (top + name_height + 20 > HEIGHT){
         top = HEIGHT - name_height - 20;
     }
-    obj_name[color].css("top", top);
+    player.name.css("top", top);
 }
 
 function reset_santa_pos(){
@@ -631,16 +574,13 @@ function reset_santa_pos(){
     var step = (WIDTH - SANTA_MARGIN) / 4;
     // var top  = 700;
     var top  = 900;
-    var left = SANTA_MARGIN;
+    // var left = SANTA_MARGIN - 2*step;
     console.log("step" + step);
-    for (var color in obj_santa){
-        obj_santa[color].css("left", left);
-        obj_santa[color].css("top", top);
-        set_name_pos(color);
-        // obj_name[color].css("left", left + 30);
-        // var santa_bottom_pos = px2int(obj_santa[color].css("top")) + px2int(obj_santa[color].css("height"));
-        // obj_name[color].css("top", santa_bottom_pos + 30);
-        left += step;
+    for (var uuid in obj_players) {
+        left = SANTA_MARGIN + (color_id[obj_players[uuid].color]-1) * step
+        obj_players[uuid].img.css("left", (left + Math.random()*100));
+        obj_players[uuid].img.css("top", (top + Math.random()*100));
+        set_name_pos(obj_players[uuid]);
     }
 }
 function getRandomInt(min, max) {
@@ -649,14 +589,11 @@ function getRandomInt(min, max) {
 function reset_window_pos(pos){
     // サンタの位置を初期値（中央に移動）
     console.log("reset_window_pos");
-    // var step = (WIDTH - 2 * MARGIN) / 4;
     var step = (WIDTH -  SANTA_MARGIN) / 4;
     var left = SANTA_MARGIN;
-    for (var color in obj_window){
-        // console.log("step" + step);
-        obj_window[color].css("left", left);
-        // obj_window[color].css("top", getRandomInt(GOAL_LINE + MARGIN * 2, 500));
-        obj_window[color].css("top", pos[color]);
+    for (var color in obj_windows){
+        obj_windows[color].css("left", left);
+        obj_windows[color].css("top", pos[color]);
         left += step;
     }
 }
@@ -674,12 +611,8 @@ function show_santa_stats(){
 
 // funcがtrueの間処理を止める，間隔はinterval msec
 function waitUntil(func, interval, callback) {
-    // if (func() == true) waitUntil(func, interval);
-    // else {
-    //     }
     setTimeout(function(){
         console.log("num_loaded_images=" + num_loaded_images);
-        // $("#prepare_message").text("Image Loading " + num_loaded_images + " / " + num_images + "");
         $("#prepare_message").text("Image Loading " + parseInt(100.0 * num_loaded_images / num_images, 10) + " %");
         console.log("num_loaded_images=" + num_loaded_images);
         if (func() == true) waitUntil(func, interval, callback);
@@ -708,39 +641,91 @@ function setImages(){
     $("#screen_white").attr({src:"image/fin1/white.png"});
     $("#screen_fin2").attr({src:"image/fin2/fin2.gif"});
     $("#merryxmas").attr({src:"image/fin2/merryxmas.png"});
-    // $("#").attr({src:""});
-    // $("#").attr({src:""});
-    // $("#screen_ouen").attr({src:"image/setumei/ouen_bg_black.png"});
-
-
-
 
     $("#window_red").attr({src:"image/window/1.png"});
     $("#window_blu").attr({src:"image/window/1.png"});
     $("#window_gre").attr({src:"image/window/1.png"});
     $("#window_yel").attr({src:"image/window/1.png"});
-    
-    $("#santa_red").attr({src:"image/santa1/1.png"});
-    $("#santa_blu").attr({src:"image/santa2/1.png"});
-    $("#santa_gre").attr({src:"image/santa4/1.png"});
-    $("#santa_yel").attr({src:"image/santa3/1.png"});
 }
 
 $(function(){
     console.log($("#game_box"));
     load_images();
-    // console.log(num_images);
+    dummy_uuids = {
+        "one": {
+            color: "red"
+        },
+        "two": {
+            color: "blu"
+        },
+        "three": {
+            color: "yel"
+        },
+        "four": {
+            color: "gre"
+        }
+    };
     waitUntil(function(){
         return num_loaded_images < num_images;
     }, 150, function(){
         setImages();
-        init()});
-    // $("#game_box").mask("Waiting...", 1000);
+        init(dummy_uuids)});
 });
 
-function init(names,window_pos){
-    // function init1() {
-        // $("#prepare_box").hide();
+function addSanta(uuids) {
+    for (uuid in uuids) {
+        user = createUser(uuid, uuids[uuid].color);
+        obj_players[uuid] = user;
+        obj_players[uuid].img.attr("src","image/santas" + obj_players[uuid].img_dir + "/1.png");
+        obj_players[uuid].img.show()
+    }
+    reset_santa_pos();
+}
+
+function createUser(uuid, color) {
+    body = document.getElementById("anime_box");
+    div = document.createElement('img');
+    div.id = "img-" + uuid;
+    body.appendChild(div);
+    obj = $("#" + div.id)
+    css_config = [
+        ["position", "absolute"],
+        ["left", "0px"],
+        ["top", "16px"],
+        ["z-index", "5000"]]
+    for (var i = 0; i < css_config.length; i++) {
+        obj.css(css_config[i][0], css_config[i][1]);
+    }
+
+    namediv = document.createElement('div');
+    namediv.id = "name-" + uuid;
+    body.appendChild(namediv);
+    obj_name = $("#" + namediv.id)
+    obj_name.addClass("name")
+    for (var i = 0; i < css_config.length; i++) {
+        obj_name.css(css_config[i][0], css_config[i][1]);
+        obj_name.text(uuid)
+    }
+    document.getElementsByTagName("body").item(0);
+
+    return {
+        uuid: uuid,
+        x: 0,
+        y: 0,
+        color: color,
+        key: null,
+        lock: false,
+        name: obj_name,
+        signal: {k_up: 0, k_down: 0, k_left: 0, k_right: 0},
+        message: "None",
+        img: obj,
+        state: STATE_INIT,
+        image_id: 1,
+        img_dir: colorid[color] // [1,2,3,4]
+    };
+}
+
+function init(uuids,window_pos){
         $("#game_box").fadeIn("100");
         $("#game_box").show();
         console.log("image loaded");
@@ -751,83 +736,40 @@ function init(names,window_pos){
         }
 
         // 各種オブジェクトの初期化
-        if (!names){
-            names = {
-                red : $("#name_red").text(),
-                blu : $("#name_blu").text(),
-                yel : $("#name_yel").text(),
-                gre : $("#name_gre").text()
-            };
-            window_pos = {
-                 "red":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-                 "blu":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-                 "gre":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-                 "yel":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
-            };
+        for (uuid in uuids) {
+            obj_players[uuid] = createUser(uuid, uuids[uuid].color)
+            obj_players[uuid].img.attr("src","image/santas" + obj_players[uuid].img_dir + "/1.png");
+            obj_players[uuid].img.show()
         }
-        obj_santa = {
-            red : $("#santa_red"),
-            blu : $("#santa_blu"),
-            yel : $("#santa_yel"),
-            gre : $("#santa_gre")
+        window_pos = {
+                "red":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                "blu":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                "gre":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+                "yel":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
         };
-        obj_window = {
+        obj_windows = {
             red : $("#window_red"),
             blu : $("#window_blu"),
             yel : $("#window_yel"),
             gre : $("#window_gre")
         };
-        obj_name = {
-            red : $("#name_red"),
-            blu : $("#name_blu"),
-            yel : $("#name_yel"),
-            gre : $("#name_gre")
-        };
-        obj_santa["red"].id = 1; // 個別画像フォルダを参照するためのid
-        obj_santa["blu"].id = 2; // santa[id], down[id]等
-        obj_santa["yel"].id = 3;
-        obj_santa["gre"].id = 4;
-        for (var color in obj_santa){
-            obj_santa[color].attr("src","image/santa" + obj_santa[color].id + "/1.png");
-            obj_santa[color].state = STATE_INIT;
-            obj_santa[color].image_id = 1; // 各種アニメーション用
-            obj_santa[color].show();
-        }
-        // シグナルカウンタを初期化
-        for(var color in santa_sig){
-            santa_sig[color][k_up] = 0;
-            santa_sig[color][k_down] = 0;
-            santa_sig[color][k_left] = 0;
-            santa_sig[color][k_right] = 0;
-        }
-        // for (var color in obj_window){
-        //     // name
-        //     obj_name[color].text(names[color]);
-        //     obj_name[color].show();
-        //     set_name_pos(color);
-
-        //     // window
-        //     obj_window[color].image_id = 1;
-        //     obj_window[color].state = STATE_CLOSED_NOT_MOVE;
-        // }
         // 画像の読み込みタイミングによって位置がずれるので少し待つ
         setTimeout(function(){
-            for (var color in obj_window){
-                // name
-                obj_name[color].text(names[color]);
-                obj_name[color].show();
-                set_name_pos(color);
-
+            for (var color in obj_windows){
                 // window
-                obj_window[color].image_id = 1;
-                obj_window[color].state = STATE_CLOSED_NOT_MOVE;
+                obj_windows[color].image_id = 1;
+                obj_windows[color].state = STATE_CLOSED_NOT_MOVE;
+            }
+            for (var uuid in obj_players) {
+                // name
+                obj_players[uuid].img.show();
+                set_name_pos(obj_players[uuid]);
             }
         }, 50);
 
 
         intro_santa = $("#santa_intro");
         intro_name = $("#name_intro");
-        // obj_tonakai = $("#tonakai");
 
         obj_sori = $("#sori");
         obj_animebox = $("#anime_box"); // ゲーム画面全体
@@ -835,14 +777,14 @@ function init(names,window_pos){
         HEIGHT = px2int(obj_animebox.css("height"));
 
         if (DEBUG_LEVEL > 0){
-            for (var color in obj_santa){
-                santa_pos[color] = $("<p>");
-                santa_pos[color].appendTo(obj_animebox);
+            for (var uuid in obj_players){
+                santa_pos[uuid] = $("<p>");
+                santa_pos[uuid].appendTo(obj_animebox);
             }
         }
 
         // 画面配置
-        
+
         reset_screen();
         reset_santa_pos();
         reset_window_pos(window_pos);
@@ -874,16 +816,6 @@ function init(names,window_pos){
         if (game_timer == undefined){
             game_timer = setInterval(movePlane, 20);
         }
-        // moveWindow();
-        // if (DEBUG_LEVEL > 0){
-        //     window_timer = setInterval(moveWindow, 2300);
-        // }
-        // $("#game_box").show();
-        // $("#game_box").fadeIn("200");
-    // }
-    // while(num_loaded_images < num_images) {
-    //     console.log("num_loaded_images=" + num_loaded_images);
-    // }
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -926,19 +858,9 @@ function timeUp(){
     window_timer = null;
 
     SendMsg("unnei",{name:"obj_bgm",method:"pause_if_exist"});
-    // if(obj_bgm){
-    //     obj_bgm.pause();
-    // }
-
-    // ヒット時のアニメーションの完了を待ってワープモーションに移る
-    // setTimeout(function(){warp();}, 500);
-
-    // debug
-    // xmas();
-    // return;
     var all_player_goal = true;
-    for(var color2 in obj_santa){
-        if (obj_santa[color2].state != STATE_GOAL) {
+    for(var uuid in obj_players){
+        if (obj_players[uuid].state != STATE_GOAL) {
             all_player_goal = false;
         }
     }
@@ -950,16 +872,17 @@ function timeUp(){
 }
 
 function warp(){
-    for(var color in obj_santa){
-        // console.log("warp santa:" + color + " state is " + obj_santa[color].state);
-        if((obj_santa[color].state == STATE_INIT) || (obj_santa[color].state == STATE_MOVING) || (obj_santa[color].state == STATE_HITTED)){
+    for (var uuid in obj_players) {
+        player = obj_players[uuid];
+        // console.log("warp santa:" + color + " state is " + player.state);
+        if((player.state == STATE_INIT) || (player.state == STATE_MOVING) || (player.state == STATE_HITTED)){
             // console.log("santa:" + color + " warps");
-            obj_santa[color].state = STATE_WAIT;
-            obj_santa[color].warp = 2;
-            var top = parseInt(obj_santa[color].css("top"));
-            // obj_santa[color].hide();
-            obj_santa[color].attr("src","image/warp" + obj_santa[color].id + "/1.png");
-            obj_santa[color].css("top", top - 900);
+            player.state = STATE_WAIT;
+            player.warp = 2;
+            var top = parseInt(player.img.css("top"));
+            // player.hide();
+            player.img.attr("src","image/warp" + player.img_dir + "/1.png");
+            player.img.css("top", top - 900);
 //            obj_santa[color].show();
         }
     }
@@ -1006,10 +929,10 @@ function rope2(idx){
             setTimeout(function(){
                 $("#santa_rope").attr("src","image/rope/9.png");
                 setTimeout(function(){rope3(0);},100);
-                for(var color in obj_santa){
+                for(var uuid in obj_players){
                     // console.log(color);
-                    if(obj_santa[color].state == STATE_WAIT){
-                        setTimeout("warpAnimation2(\"" + color + "\")",800);
+                    if(obj_players[uuid].state == STATE_WAIT){
+                        setTimeout("warpAnimation2(\"" + uuid + "\")",800);
                     }
                 }
             });
@@ -1034,22 +957,23 @@ function rope3(idx){
 }
 
 // santa: 1 ~ 12
-function warpAnimation2(color){
+function warpAnimation2(uuid) {
+    player = obj_players[uuid];
     // console.log(color);
     // console.log("ここがバグとみた！！color=" + color + " warp="+obj_santa[color].warp);
-    obj_santa[color].attr("src","image/warp" + obj_santa[color].id + "/" + obj_santa[color].warp + ".png");
-    obj_santa[color].warp = obj_santa[color].warp + 1;
-    if(obj_santa[color].warp < 12){
-        setTimeout(function(){warpAnimation2(color);},100);
+    player.img.attr("src","image/warp" + player.img_dir + "/" + player.warp + ".png");
+    player.warp = player.warp + 1;
+    if(player.warp < 12){
+        setTimeout(function(){warpAnimation2(uuid);},100);
     } else {
         setTimeout(function(){
             SendMsg("unnei",{name:"warp",method:"obj_overwrite"});
             // obj_bgm = bgm_warp;
             // obj_bgm.play();
 
-            obj_santa[color].animate({top:-1440},2000);
-            obj_name[color].animate({top:-1440},2800);
-            setTimeout(function(){warpAnimation3(color);},2100);
+            obj_players[uuid].img.animate({top:-1440},2000);
+            obj_players[uuid].name.animate({top:-1440},2800);
+            setTimeout(function(){warpAnimation3(uuid);},2100);
         },400);
     }
 }
@@ -1094,9 +1018,9 @@ function rope5(idx){
 }
 
 // 上からサンタが落ちてくる
-function warpAnimation3(color){
-    obj_santa[color].image_id = 0;
-    santa_goal_sori_ride(color);
+function warpAnimation3(uuid){
+    obj_players[uuid].image_id = 0;
+    santa_goal_sori_ride(uuid);
 }
 
 function warpAnimationEnd(){
@@ -1110,8 +1034,8 @@ function soriAnimationStart(){
     //$("#santa_rope").animate({left:-1080},2000);
 
     $("#santa_rope").hide();
-    for (var color in obj_santa){
-        obj_santa[color].hide();
+    for (var uuid in obj_players){
+        obj_players[uuid].img.hide();
     }
     setTimeout("soriAnimation()",100);
 }
@@ -1410,8 +1334,8 @@ function readyGo(){
 // よーいどん用
 function readyGo2(){
     startGameTimer();
-    for(var color in obj_santa){
-        obj_santa[color].state = STATE_MOVING;
+    for(var uuid in obj_players){
+        obj_players[uuid].state = STATE_MOVING;
     }
     $("#screen_yoi").hide();
     $("#screen_don").show();

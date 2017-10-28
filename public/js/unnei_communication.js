@@ -13,7 +13,7 @@ var bgm_start = new Audio("image/sound/start.wav");
 bgm_hit.load();
 bgm_goal.load();
 bgm_yojinobori.load();
-bgm_warp.load();  
+bgm_warp.load();
 bgm_start.load();
 
 var bgmAudio = {
@@ -65,7 +65,7 @@ socket.on('message', function(msg) {
          var msgObj = JSON.parse(msg.value);
 
          // if(msgObj.method.substr(0, 1) != "g"){
-         //  console.log(msgObj);          
+         //  console.log(msgObj);
          // }
          switch(msgObj.method){
             case "santa_move":
@@ -89,7 +89,7 @@ socket.on('message', function(msg) {
                receivedCount[color][index]++;
 
                $("#" + color + index + gesture)[0].innerHTML = count;
-               $("#" + color + index + "recv")[0].innerHTML = receivedCount[color][index]; 
+               $("#" + color + index + "recv")[0].innerHTML = receivedCount[color][index];
                break;
             case "gadget_alive":
                var gadgetNum = msgObj.options["gadgetNum"];
@@ -181,15 +181,37 @@ function getRandomInt(min, max) {
   return Math.floor( Math.random() * (max - min + 1) ) + min;
 }
 
+function createSanta() {
+  santa = {
+    UUID: "" + Math.random(),
+    state: "not goal",
+    x: 0,
+    y: 500,
+    names: "name",
+    color: "red"
+  }
+}
+
+var dummy_uuids = {
+  one: {
+    color: "red"
+  },
+  two: {
+    color: "blu"
+  },
+  three: {
+    color: "yel"
+  },
+  four: {
+    color: "gre"
+  }
+}
+
 function init(){
     console.log();
 	SendMsg("message", {method:"init",
                       options:{},
-                      names:{"red":$("#name_red").val(),
-                             "blu":$("#name_blu").val(),
-                             "gre":$("#name_gre").val(),
-                             "yel":$("#name_yel").val()
-                            },
+                      uuids: dummy_uuids,
                       pos:{
                            "red":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
                            "blu":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
@@ -246,6 +268,29 @@ function timeUp(){
 	SendMsg("message", {method:"timeUp", options:{}});
 }
 
+function createDummyUsers() {
+  return {
+    timestamp: new Date(),
+    UUIDs: [Math.random()]
+  };
+}
+
+function addSanta() {
+  var dummy_uuids = {};
+  var colors = ["red", "yel", "blu", "gre"];
+  for (var i = 0; i < 4; i++) {
+    uuid = Math.floor(Math.random() * 100000);
+    dummy_uuids[uuid] = { color: colors[uuid % colors.length] };
+  }
+  console.log("unei", dummy_uuids);
+  SendMsg("message", {
+    method: "addSanta",
+    options: {},
+    uuids: dummy_uuids,
+    timestamp: new Date()
+  })
+}
+
 // メッセージを送る
 function SendMsg(target,msg) {
      socket.emit(target, { value: JSON.stringify(msg) });
@@ -287,16 +332,44 @@ $(
             if (e.keyCode == k_blu) $("#cnt_blu").css("background-color", "White");
             if (e.keyCode == k_yel) $("#cnt_yel").css("background-color", "White");
             if (e.keyCode == k_gre) $("#cnt_gre").css("background-color", "White");
-            var santa_keys = {red:keys[k_red], blu:keys[k_blu], yel:keys[k_yel], gre:keys[k_gre]};
-            SendMsg("message", {method:"santa_move", options:{santa_keys:santa_keys}});
+            // var uuid_keys = {
+            //   one: {
+            //     keys: keys[k_red]
+            //   },
+            //   two: {
+            //     keys: keys[k_blu]
+            //   },
+            //   three: {
+            //     keys: keys[k_yel]
+            //   },
+            //   four: {
+            //     keys: keys[k_gre]
+            //   },
+            // };
+            var santa_keys = {}
+            if (keys[k_red]) santa_keys["one"] = keys[k_red];
+            if (keys[k_blu]) santa_keys["two"] = keys[k_blu];
+            if (keys[k_yel]) santa_keys["three"] = keys[k_yel];
+            if (keys[k_gre]) santa_keys["four"] = keys[k_gre];
+            // var santa_keys = {
+            //   one: keys[k_red],
+            //   two: keys[k_blu],
+            //   three: keys[k_yel],
+            //   four: keys[k_gre],
+            // };
+            // var santa_keys = {red:keys[k_red], blu:keys[k_blu], yel:keys[k_yel], gre:keys[k_gre]};
+            if (santa_keys) {
+              console.log(santa_keys);
+              SendMsg("message", { method: "santa_move", options: { santa_keys: santa_keys } });
+            }
             delete keys[e.keyCode];
         });
         // setInterval(controller, 100);
 
         // gadget の初期値を読込
         for (var color in colorToGadgetMap){
-          $("#" + color + "0gadget")[0].value = colorToGadgetMap[color][0]; 
-          $("#" + color + "1gadget")[0].value = colorToGadgetMap[color][1]; 
+          $("#" + color + "0gadget")[0].value = colorToGadgetMap[color][0];
+          $("#" + color + "1gadget")[0].value = colorToGadgetMap[color][1];
         }
 
         // checkAliveする
@@ -313,8 +386,8 @@ $(
 function setGadget(color, index){
   var gadgetNum = $("#" + color + index + "gadget")[0].value;
   if(0 < gadgetNum  && gadgetNum < 100){
-    colorToGadgetMap[color][index] = gadgetNum; 
-    updateGadegetColor(gadgetNum,color,index); 
+    colorToGadgetMap[color][index] = gadgetNum;
+    updateGadegetColor(gadgetNum,color,index);
   }
 }
 
@@ -326,11 +399,11 @@ function updateGadegetColor(gadgetNum,color,index){
 
 
 function gestureStart(){
-  SendMsg("gadget", {method:"gStart", options:{}});  
+  SendMsg("gadget", {method:"gStart", options:{}});
 }
 
 function gestureStop(){
-  SendMsg("gadget", {method:"gStop", options:{}});  
+  SendMsg("gadget", {method:"gStop", options:{}});
 }
 
 function clearCount(){
@@ -342,10 +415,10 @@ function clearCount(){
       $("#" + color + index + "byebye")[0].innerHTML = 0;
       $("#" + color + index + "rotate")[0].innerHTML = 0;
       $("#" + color + index + "recv")[0].innerHTML = 0;
-      receivedCount[color][index] = 0; 
+      receivedCount[color][index] = 0;
     }
   }
-  SendMsg("gadget", {method:"clearCount", options:{}});  
+  SendMsg("gadget", {method:"clearCount", options:{}});
 }
 
 function checkAlive(){
@@ -354,5 +427,5 @@ function checkAlive(){
     $("#" + colors[color] + "0" + "alive")[0].innerHTML = "";
     $("#" + colors[color] + "1" + "alive")[0].innerHTML = "";
   }
-  SendMsg("gadget", {method:"checkAlive", options:{}});  
+  SendMsg("gadget", {method:"checkAlive", options:{}});
 }

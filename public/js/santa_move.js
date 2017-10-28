@@ -310,7 +310,7 @@ function santa_goal1(player){
     // そりへ座る
     // 状態変更(手を触れるように)
     player.state = STATE_WAIT;
-    player.img.attr({src:"image/up" + player.img_dir +"/1.png"});
+    player.img.attr({src:"image/up" + player.img_dir +"s/1.png"});
     console.log("santa_goal1");
     santa_goal_anime(player);
     // anime
@@ -401,7 +401,7 @@ function santa_hitstop(player){
     player.img.animate({top: pos_top + 200}, 300);
     set_name_pos(player);
     var prev_src = player.img.attr("src");
-    player.img.attr({src:"image/down" + player.img_dir + "/1.png"});
+    player.img.attr({src:"image/down" + player.img_dir + "s/1.png"});
     SendMsg("unnei",{name:"hit",method:"play"});
     hit_animation(player, prev_src);
 }
@@ -681,7 +681,7 @@ function addSanta(uuids) {
     for (uuid in uuids) {
         user = createUser(uuid, uuids[uuid].color);
         obj_players[uuid] = user;
-        obj_players[uuid].img.attr("src","image/santas" + obj_players[uuid].img_dir + "/1.png");
+        obj_players[uuid].img.attr("src","image/santa" + obj_players[uuid].img_dir + "s/1.png");
         obj_players[uuid].img.show()
     }
     reset_santa_pos();
@@ -744,7 +744,7 @@ function specialMove(uuids) {
         // player.img.animate({top: pos_top + 200}, 300);
         set_name_pos(player);
         var prev_src = player.img.attr("src");
-        player.img.attr({src:"image/down" + player.img_dir + "/1.png"});
+        player.img.attr({src:"image/down" + player.img_dir + "s/1.png"});
         SendMsg("unnei",{name:"hit",method:"play"});
         hit_animation(player, prev_src);
     }
@@ -763,7 +763,7 @@ function init(uuids,window_pos){
         // 各種オブジェクトの初期化
         for (uuid in uuids) {
             obj_players[uuid] = createUser(uuid, uuids[uuid].color)
-            obj_players[uuid].img.attr("src","image/santas" + obj_players[uuid].img_dir + "/1.png");
+            obj_players[uuid].img.attr("src","image/santa" + obj_players[uuid].img_dir + "s/1.png");
             obj_players[uuid].img.show()
         }
         obj_windows = {

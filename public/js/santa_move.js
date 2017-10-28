@@ -665,11 +665,17 @@ $(function(){
             color: "gre"
         }
     };
+    window_pos = {
+        "red": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+        "blu": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+        "gre": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+        "yel": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
+    };
     waitUntil(function(){
         return num_loaded_images < num_images;
     }, 150, function(){
         setImages();
-        init(dummy_uuids)});
+        init(dummy_uuids, window_pos)});
 });
 
 function addSanta(uuids) {
@@ -741,12 +747,6 @@ function init(uuids,window_pos){
             obj_players[uuid].img.attr("src","image/santas" + obj_players[uuid].img_dir + "/1.png");
             obj_players[uuid].img.show()
         }
-        window_pos = {
-                "red":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-                "blu":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-                "gre":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-                "yel":getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
-        };
         obj_windows = {
             red : $("#window_red"),
             blu : $("#window_blu"),

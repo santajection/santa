@@ -1,6 +1,6 @@
 #!/bin/sh
 
-dirs="santa1 santa2 santa3 santa4 down1 down2 down3 down4 up1 up2 up3 up4"
+dirs="santa1 santa2 santa3 santa4 down1 down2 down3 down4 up1 up2 up3 up4 warp1 warp2 warp3 warp4"
 
 ratio="25%"
 

@@ -681,6 +681,15 @@ $(function(){
         init(dummy_uuids, window_pos)});
 });
 
+function otasuke(color, ratio) {
+    for (uuid in obj_players) {
+        if (obj_players[uuid].color == color &&
+            Math.random() <= ratio) {
+            _communication_keys[uuid] = { k_up: 1 };
+        }
+    }
+}
+
 function addSanta(uuids) {
     for (uuid in uuids) {
         user = createUser(uuid, uuids[uuid].color);

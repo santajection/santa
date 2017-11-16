@@ -20,12 +20,18 @@ socket.on('message', function(msg) {
       try{
         var msgObj = JSON.parse(msg.value);
         console.log(msgObj, msgObj.method);
-         switch(msgObj.method){
-           case "santa_move":
+        switch (msgObj.method) {
+          case "otasuke":
+            for (var color in msgObj.colors) {
+              otasuke(color, msgObj.ratio);
+            }
+            break;
+          case "santa_move":
             //  console.log(msgObj.options["santa_keys"]);
-                for (var uuid in msgObj.options["santa_keys"]) {
-                  _communication_keys[uuid] = { k_up: msgObj.options["santa_keys"][uuid] };
-                }
+            for (var uuid in msgObj.options["santa_keys"]) {
+              _communication_keys[uuid] = { k_up: msgObj.options["santa_keys"][uuid] };
+            }
+
                 // console.log(_communication_keys);
               //   for (var color in _communication_keys){
               //     if (msgObj.options["santa_keys"][color]){

@@ -359,10 +359,10 @@ $(
             //   },
             // };
             var santa_keys = {}
-            if (keys[k_red]) santa_keys["one"] = keys[k_red];
-            if (keys[k_blu]) santa_keys["two"] = keys[k_blu];
-            if (keys[k_yel]) santa_keys["three"] = keys[k_yel];
-            if (keys[k_gre]) santa_keys["four"] = keys[k_gre];
+            if (keys[k_red]) santa_keys["red"] = keys[k_red];
+            if (keys[k_blu]) santa_keys["blu"] = keys[k_blu];
+            if (keys[k_yel]) santa_keys["yel"] = keys[k_yel];
+            if (keys[k_gre]) santa_keys["gre"] = keys[k_gre];
             // var santa_keys = {
             //   one: keys[k_red],
             //   two: keys[k_blu],
@@ -370,9 +370,11 @@ $(
             //   four: keys[k_gre],
             // };
             // var santa_keys = {red:keys[k_red], blu:keys[k_blu], yel:keys[k_yel], gre:keys[k_gre]};
+
             if (santa_keys) {
               console.log(santa_keys);
-              SendMsg("message", { method: "santa_move", options: { santa_keys: santa_keys } });
+              SendMsg("message", { method: "otasuke", colors: santa_keys, ratio: parseFloat($('#config_santa_move_ratio').val()) });
+              // SendMsg("message", { method: "santa_move", options: { santa_keys: santa_keys } });
             }
             delete keys[e.keyCode];
         });

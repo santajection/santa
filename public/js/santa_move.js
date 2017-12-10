@@ -72,45 +72,45 @@ function load_images(){
     image_paths.push(img_dir + "introduction/bg_black.png");
     image_paths.push(img_dir + "others/wall.png");
     image_paths.push(img_dir + "goal/goal.png");
-    for (var color in color_id){
+    for (var color in color_id) {
         var i = color_id[color];
-    // for (var i = 1; i <= 4; i++){
+        // for (var i = 1; i <= 4; i++){
         // introduction
-        for (var j = 1; j <= num_introduction_images[i]; j++){
-            image_paths.push(img_dir + "introduction/introduction"+i+"/" +j +".png");
+        for (var j = 1; j <= num_introduction_images[i]; j++) {
+            image_paths.push(img_dir + "introduction/introduction" + i + "/" + j + ".png");
         }
         // window
-        for (var j = 1; j <= 26; j++){
-            image_paths.push(img_dir + "window/" +j +".png");
+        for (var j = 1; j <= 26; j++) {
+            image_paths.push(img_dir + "window/" + j + ".png");
         }
 
         // santa 本体
-        for (var j = 1; j <= 10; j++){
-            image_paths.push(img_dir + "santa" + i + "/"+ j +".png");
-            image_paths.push(img_dir + "santa" + i + "s/"+ j +".png");
+        for (var j = 1; j <= 10; j++) {
+            // image_paths.push(img_dir + "santa" + i + "/" + j + ".png");
+            image_paths.push(img_dir + "santa" + i + "s/" + j + ".png");
         }
 
         // santa hit
-        for (var j = 1; j <= 2; j++){
-            image_paths.push(img_dir + "down" + i + "/"+ j +".png");
-            image_paths.push(img_dir + "down" + i + "s/"+ j +".png");
+        for (var j = 1; j <= 2; j++) {
+            // image_paths.push(img_dir + "down" + i + "/" + j + ".png");
+            image_paths.push(img_dir + "down" + i + "s/" + j + ".png");
         }
 
         // santa goal
-        for (var j = 1; j <= 7; j++){
-            image_paths.push(img_dir + "goal" + i + "/"+ j +".png");
+        for (var j = 1; j <= 7; j++) {
+            image_paths.push(img_dir + "goal" + i + "/" + j + ".png");
         }
 
         // santa sori ride
-        for (var j = 1; j <= 11; j++){
-            image_paths.push(img_dir + "up" + i + "/"+ j +".png");
-            image_paths.push(img_dir + "up" + i + "s/"+ j +".png");
+        for (var j = 1; j <= 11; j++) {
+            // image_paths.push(img_dir + "up" + i + "/" + j + ".png");
+            image_paths.push(img_dir + "up" + i + "s/" + j + ".png");
         }
 
         // santa warp
-        for (var j = 1; j <= 11; j++){
-            image_paths.push(img_dir + "warp" + i + "/"+ j +".png");
-            image_paths.push(img_dir + "warp" + i + "s/"+ j +".png");
+        for (var j = 1; j <= 11; j++) {
+            // image_paths.push(img_dir + "warp" + i + "/" + j + ".png");
+            image_paths.push(img_dir + "warp" + i + "s/" + j + ".png");
         }
     }
     // sleigh
@@ -911,10 +911,13 @@ function warp(){
             // console.log("santa:" + color + " warps");
             player.state = STATE_WAIT;
             player.warp = 2;
+            var prev_height = parseInt(player.img.css("height"));
             var top = parseInt(player.img.css("top"));
             // player.hide();
-            player.img.attr("src","image/warp" + player.img_dir + "/1.png");
-            player.img.css("top", top - 900);
+            player.img.attr("src","image/warp" + player.img_dir + "s/1.png");
+            var cur_height = parseInt(player.img.css("height"));
+            // player.img.css("top", top - 900);
+            player.img.css("top", top - (cur_height - prev_height));
 //            obj_santa[color].show();
         }
     }
@@ -993,7 +996,7 @@ function warpAnimation2(uuid) {
     player = obj_players[uuid];
     // console.log(color);
     // console.log("ここがバグとみた！！color=" + color + " warp="+obj_santa[color].warp);
-    player.img.attr("src","image/warp" + player.img_dir + "/" + player.warp + ".png");
+    player.img.attr("src","image/warp" + player.img_dir + "s/" + player.warp + ".png");
     player.warp = player.warp + 1;
     if(player.warp < 12){
         setTimeout(function(){warpAnimation2(uuid);},100);

@@ -4,6 +4,7 @@
 
 // 　サーバとのコネクションの作成
 var socket = io.connect(SERVER + "/proj");
+// var socket = io.connect("/proj");
 // var socket = io.connect('http://192.168.0.5:3000');
 socket.on('connect', function(msg) {
   console.log("connect");
@@ -12,34 +13,56 @@ socket.on('connect', function(msg) {
 
 });
 
+// var socket2 = io.connect('/proj')
+
+socket.on('connect', function () {
+   console.log(socket);
+})
+   .on('start', function (msg) {
+      console.log(msg);
+      // readyGo();
+      socket.emit('started', null);
+   })
+   .on('mobile_move', function (msg) {
+      for (var uuid in msgObj.options["santa_keys"]) {
+         _communication_keys[uuid] = { k_up: msgObj.options["santa_keys"][uuid] };
+      }
+   })
+   .on('join', function (msg) {
+
+   })
+   .on('glow_santa', function (msg) {
+
+   })
+   .on('change_scene', function (msg) {
+
+   })
+   .on('initialize', function (msg) {
+      socket.emit('initialized', null);
+   })
+   .on('notify', function (msg) {
+
+   })
+   .on('santa_move', function (msg) {
+      console.log('santa_move', msg);
+      for (var color in msg.options['colors']) {
+         otasuke(color, msg.options['amount']);
+      }
+   });
+
 // メッセージを受けたとき
-socket.on('message', function(msg) {
+socket.on('initialize', function(msg) {
    // メッセージを画面に表示する
+   console.log('msg.options', msg);
    document.getElementById("receiveMsg").innerHTML = msg.value;
-   if(msg.value){
+  //  if(msg.options != null){
+   if(true){
       try{
-        var msgObj = JSON.parse(msg.value);
+        console.log('hoge');
+        var msgObj = JSON.parse(msg.options.value);
+        // var msgObj = msg.options;
         console.log(msgObj, msgObj.method);
         switch (msgObj.method) {
-          case "otasuke":
-            for (var color in msgObj.colors) {
-              otasuke(color, msgObj.ratio);
-            }
-            break;
-          case "santa_move":
-            //  console.log(msgObj.options["santa_keys"]);
-            for (var uuid in msgObj.options["santa_keys"]) {
-              _communication_keys[uuid] = { k_up: msgObj.options["santa_keys"][uuid] };
-            }
-
-                // console.log(_communication_keys);
-              //   for (var color in _communication_keys){
-              //     if (msgObj.options["santa_keys"][color]){
-              // // console.log(color + ":"+msgObj.options["santa_keys"][color]);
-              //     _communication_keys[color][k_up] = msgObj.options["santa_keys"][color];
-              //     }
-              //   }
-                break;
             case "gadget_move":
                var gesture = msgObj.options["gesture"];
                var gadgetNum = msgObj.options["gadgetNum"];
@@ -99,7 +122,8 @@ socket.on('message', function(msg) {
             case "end":
             default:
          }
-      } catch (error){
+      } catch (error) {
+         console.log('error', error);
          document.getElementById("errorMsg").innerHTML = error;
       }
    }
@@ -107,8 +131,9 @@ socket.on('message', function(msg) {
 
 // メッセージを送る
 function SendMsg(target,msg) {
-     socket.emit(target, { value: JSON.stringify(msg) });
-     console.log(target,msg);
+     socket.emit("initialize", JSON.stringify(msg) );
+   //   socket.emit("initialize", { value: JSON.stringify(msg) });
+     console.log('sendmsg', target,msg);
 }
 
 // 切断する

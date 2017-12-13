@@ -49,6 +49,8 @@ var receivedCount = {"red":[0,0],"blu":[0,0],"gre":[0,0],"yel":[0,0]};
 
 // 　サーバとのコネクションの作成
 var socket = io.connect(SERVER + "/unnei");
+console.log(SERVER + "/unnei", socket)
+
 // var socket = io.connect('http://192.168.0.5:3000');
 socket.on('connect', function(msg) {
   console.log("connect");
@@ -60,9 +62,11 @@ socket.on('connect', function(msg) {
 socket.on('message', function(msg) {
    // メッセージを画面に表示する
    document.getElementById("receiveMsg").innerHTML = msg.value;
+   console.log('unnei_communication message', msg);
    if(msg.value){
       try{
-         var msgObj = JSON.parse(msg.value);
+         var msgObj = JSON.parse(msg.options.value);
+         console.log('unnei_communication', msgObj);
 
          // if(msgObj.method.substr(0, 1) != "g"){
          //  console.log(msgObj);
@@ -260,7 +264,8 @@ function ouenBtn(){
 }
 
 function readyGo(){
-	SendMsg("message", {method:"readyGo", options:{}});
+  // SendMsg("readyGo", null);
+  SendMsg("message", {method:"readyGo", options:{}});
   setTimeout(gestureStart,2000);
 }
 
@@ -297,15 +302,19 @@ function addSanta() {
   console.log("unei", dummy_uuids);
   SendMsg("message", {
     method: "addSanta",
-    options: {},
+    options: {uuids: dummy_uuids,
+    timestamp: new Date()},
     uuids: dummy_uuids,
     timestamp: new Date()
   })
 }
 
 // メッセージを送る
-function SendMsg(target,msg) {
-     socket.emit(target, { value: JSON.stringify(msg) });
+function SendMsg(target, msg) {
+  console.log('SendMsg', 'join', msg);
+  console.log('initialize', JSON.stringify(msg));
+    //  socket.emit(target, { value: JSON.stringify(msg) });
+     socket.emit('initialize', { value: JSON.stringify(msg) });
      if (useCloud) {
         SendMsgCloud(target,msg);
      }
@@ -363,17 +372,10 @@ $(
             if (keys[k_blu]) santa_keys["blu"] = keys[k_blu];
             if (keys[k_yel]) santa_keys["yel"] = keys[k_yel];
             if (keys[k_gre]) santa_keys["gre"] = keys[k_gre];
-            // var santa_keys = {
-            //   one: keys[k_red],
-            //   two: keys[k_blu],
-            //   three: keys[k_yel],
-            //   four: keys[k_gre],
-            // };
-            // var santa_keys = {red:keys[k_red], blu:keys[k_blu], yel:keys[k_yel], gre:keys[k_gre]};
 
             if (santa_keys) {
-              console.log(santa_keys);
-              SendMsg("message", { method: "otasuke", colors: santa_keys, ratio: parseFloat($('#config_santa_move_ratio').val()) });
+               console.log(santa_keys);
+               socket.emit('santa_move', { colors: santa_keys, amount: parseFloat($('#config_santa_move_ratio').val())});
               // SendMsg("message", { method: "santa_move", options: { santa_keys: santa_keys } });
             }
             delete keys[e.keyCode];
@@ -387,7 +389,7 @@ $(
         }
 
         // checkAliveする
-        setInterval(checkAlive, 5000);
+        // setInterval(checkAlive, 5000);
     }
 
     // TODO: keyをqwerにして、red blu gre yel　を全部移動できるようにする

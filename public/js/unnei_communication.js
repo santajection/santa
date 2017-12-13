@@ -196,56 +196,62 @@ function createSanta() {
   }
 }
 
-var dummy_uuids = {
-  one: {
-    color: "red"
-  },
-  two: {
-    color: "blu"
-  },
-  three: {
-    color: "yel"
-  },
-  four: {
-    color: "gre"
-  }
-}
+// var dummy_uuids = {
+//   one: {
+//     color: "red"
+//   },
+//   two: {
+//     color: "blu"
+//   },
+//   three: {
+//     color: "yel"
+//   },
+//   four: {
+//     color: "gre"
+//   }
+// }
 
 function init() {
-  console.log();
-  SendMsg("message", {
-    method: "init",
-    options: {},
-    uuids: dummy_uuids,
-    pos: {
-      "red": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-      "blu": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-      "gre": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-      "yel": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
-    }
-  });
+  socket.emit('initialize');
+  // SendMsg("message", {
+  //   method: "init",
+  //   options: {},
+  //   uuids: dummy_uuids,
+  //   pos: {
+  //     "red": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+  //     "blu": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+  //     "gre": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+  //     "yel": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
+  //   }
+  // });
   gestureStop();
 }
 
 function preBtn() {
-  SendMsg("message", { method: "pre", options: {} });
+  socket.emit('change_scene', { scene: 'pre' });
 }
 
 function titleBtn() {
-  SendMsg("message", { method: "title", options: {} });
+  socket.emit('change_scene', { scene: 'title' });
 }
 
 function ruleBtn() {
-  SendMsg("message", { method: "rule", options: {} });
+  socket.emit('change_scene', { scene: 'rule' });
 }
 function toujouBtn(color) {
+  socket.emit('change_scene', { scene: 'toujou', color: color, name: $("#name_" + color).val()});
   console.log("toujou send " + color);
-  SendMsg("message", {
-    method: "toujou",
-    options: {}, color: color,
-    name: $("#name_" + color).val()
-  });
+  // SendMsg("message", {
+  //   method: "toujou",
+  //   options: {}, color: color,
+  //   name: $("#name_" + color).val()
+  // });
 }
+
+function ouenBtn() {
+  socket.emit('change_scene', { scene: 'ouen' });
+}
+
 function config() {
   console.log({
     frame_per_signal: $("#config_frame_per_signal").val(),
@@ -265,13 +271,10 @@ function config() {
   });
 }
 
-function ouenBtn() {
-  SendMsg("message", { method: "ouen", options: {} });
-}
-
 function readyGo() {
-  // SendMsg("readyGo", null);
-  SendMsg("message", { method: "readyGo", options: {} });
+  console.log('emit start');
+  socket.emit('start');
+  // SendMsg("message", { method: "start"});
   setTimeout(gestureStart, 2000);
 }
 
@@ -317,12 +320,16 @@ function addSanta() {
   })
 }
 
+function notify_mobile() {
+  msg = $("#mobile_message").val();
+  console.log('mobile_message', msg);
+  socket.emit('notify_mobile', { message: msg });
+}
+
 // メッセージを送る
 function SendMsg(target, msg) {
-  console.log('SendMsg', 'join', msg);
-  console.log('initialize', JSON.stringify(msg));
-  //  socket.emit(target, { value: JSON.stringify(msg) });
-  socket.emit('initialize', { value: JSON.stringify(msg) });
+  console.log('SendMsg', msg);
+  socket.emit('notify_proj', { value: JSON.stringify(msg) });
   if (useCloud) {
     SendMsgCloud(target, msg);
   }
@@ -382,7 +389,7 @@ $(
       if (keys[k_gre]) santa_keys["gre"] = keys[k_gre];
 
       if (santa_keys) {
-        console.log(santa_keys);
+        // console.log(santa_keys);
         socket.emit('santa_move', { colors: santa_keys, amount: parseFloat($('#config_santa_move_ratio').val()) });
         // SendMsg("message", { method: "santa_move", options: { santa_keys: santa_keys } });
       }

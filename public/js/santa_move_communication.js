@@ -19,8 +19,8 @@ socket.on('connect', function () {
   console.log(socket);
 })
   .on('start', function (msg) {
-    console.log(msg);
-    // readyGo();
+    console.log('####start', msg);
+    readyGo();
     socket.emit('started', null);
   })
   .on('mobile_move', function (msg) {
@@ -29,15 +29,68 @@ socket.on('connect', function () {
     }
   })
   .on('join', function (msg) {
+    console.log('join');
+    //     case "addSanta":
+    // console.log("comu", msgObj.uuids);
+    // addSanta(msgObj.uuids);
+    // break;
 
   })
   .on('glow_santa', function (msg) {
 
+    //     case "specialMove":
+    // specialMove(msgObj.uuids);
+    // break;
   })
   .on('change_scene', function (msg) {
-
+    console.log('change_scene', msg);
+    // socket.on('change_scene', {method: 'change_scene', options: {???}, timestamp: 12323422224123}): 画面遷移指示
+    switch (msg.options.scene) {
+      // case "init":
+      //   init(msgObj.uuids, msgObj.pos);
+      //   break;
+      case "pre":
+        pre();
+        break;
+      case "title":
+        title();
+        break;
+      case "rule":
+        rule();
+        break;
+      case "ouen":
+        ouen();
+        break;
+      case "toujou":
+        console.log("color" + msg.options.color + " name=" + msg.options.name);
+        toujou_start(msg.options.color, msg.options.name);
+        break;
+    }
   })
   .on('initialize', function (msg) {
+    console.log('initialize', msg);
+    var dummy_uuids = {
+      one: {
+        color: "red"
+      },
+      two: {
+        color: "blu"
+      },
+      three: {
+        color: "yel"
+      },
+      four: {
+        color: "gre"
+      }
+    }
+    var pos = {
+      "red": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+      "blu": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+      "gre": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+      "yel": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
+    }
+
+    init(dummy_uuids, pos);
     socket.emit('initialized', null);
   })
   .on('notify', function (msg) {
@@ -51,14 +104,13 @@ socket.on('connect', function () {
   });
 
 // メッセージを受けたとき
-socket.on('initialize', function (msg) {
+socket.on('notify', function (msg) {
   // メッセージを画面に表示する
   console.log('msg.options', msg);
   document.getElementById("receiveMsg").innerHTML = msg.value;
   //  if(msg.options != null){
   if (true) {
     try {
-      console.log('hoge');
       var msgObj = JSON.parse(msg.options.value);
       // var msgObj = msg.options;
       console.log(msgObj, msgObj.method);
@@ -77,40 +129,11 @@ socket.on('initialize', function (msg) {
           var index = msgObj.options["index"];
           colorToGadgetMap[color][index] = gadgetNum;
           break;
-        case "init":
-          init(msgObj.uuids, msgObj.pos);
-          break;
-        case "pre":
-          pre();
-          break;
-        case "title":
-          title();
-          break;
-        case "rule":
-          rule();
-          break;
-        case "ouen":
-          ouen();
-          break;
-        case "readyGo":
-          readyGo();
-          break;
         case "timeUp":
           timeUp();
           break;
-        case "specialMove":
-          specialMove(msgObj.uuids);
-          break;
         case "dev_readyGo":
           readyGo(0, 0);
-          break;
-        case "addSanta":
-          console.log("comu", msgObj.uuids);
-          addSanta(msgObj.uuids);
-          break;
-        case "toujou":
-          console.log("color" + msgObj.color + " name=" + msgObj.name);
-          toujou_start(msgObj.color, msgObj.name);
           break;
         case "config":
           frame_per_signal = msgObj.options["frame_per_signal"];

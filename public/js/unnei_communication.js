@@ -212,18 +212,7 @@ function createSanta() {
 // }
 
 function init() {
-  socket.emit('initialize');
-  // SendMsg("message", {
-  //   method: "init",
-  //   options: {},
-  //   uuids: dummy_uuids,
-  //   pos: {
-  //     "red": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-  //     "blu": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-  //     "gre": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-  //     "yel": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
-  //   }
-  // });
+  socket.emit('change_scene', { scene: 'init' });
   gestureStop();
 }
 
@@ -239,7 +228,7 @@ function ruleBtn() {
   socket.emit('change_scene', { scene: 'rule' });
 }
 function toujouBtn(color) {
-  socket.emit('change_scene', { scene: 'toujou', color: color, name: $("#name_" + color).val()});
+  socket.emit('change_scene', { scene: 'toujou', color: color, name: $("#name_" + color).val() });
   console.log("toujou send " + color);
   // SendMsg("message", {
   //   method: "toujou",

@@ -328,7 +328,6 @@ function santa_goal_sori_ride(uuid) {
   // そりに乗る時はサンタはそりの背面にいるようにする
   player.name.hide();
   player.img.css('z-index', Number($("#sori").css('z-index')) - 1);
-  console.log("color's z-index" + player.img.css('z-index'));
   // そりに乗る
   SendMsg("unnei", { name: "goal", method: "play" });
   //    bgm_goal.play();
@@ -398,7 +397,8 @@ function hit_animation(player, prev_src) {
 
 function santa_hitstop(player) {
   // トナカイとぶつかった時のモーション
-  console.log("HITTED:" + player.state);
+  console.log("HITTED:" + player.uuid);
+  socket.emit('hit_tonakai', { id: player.uuid });
   player.state = STATE_HITTED;
   player.img.stop();
   // 操作不可
@@ -524,6 +524,8 @@ function movePlane() {
     // ゴールしたかチェック
     if (toppos <= GOAL_LINE && player.state == STATE_MOVING) {
       player.img.stop();
+      console.log('goaled', player.uuid);
+      socket.emit('goaled', {id: player.uuid});
       goalAnimation(player); //todo
       // alert();
     }
@@ -688,7 +690,7 @@ function otasuke(color, ratio) {
   for (uuid in obj_players) {
     if (obj_players[uuid].color == color &&
       Math.random() <= ratio) {
-      _communication_keys[uuid] = { k_up: 1 };
+      _communication_keys[uuid] = { k_up: 10 };
     }
   }
 }
@@ -1141,6 +1143,10 @@ function xmas() {
         $("#screen_fin1").hide();
         $("#screen_white").fadeOut(500);
         $("#merryxmas").fadeIn("slow");
+        setTimeout(function () {
+          console.log('ended');
+          socket.emit('ended');
+        }, 3000);
         // $("#white_box").fadeIn("slow");
       }, 1000);
     }, 3900);
@@ -1379,7 +1385,8 @@ function readyGo2() {
   $("#screen_don").show();
   $("#screen_don").fadeOut(3000);
   //bgm開始
-  SendMsg("unnei", { name: "play", method: "readyGo2" });
+  socket.emit('bgm', { name: "play", method: "readyGo2" })
+  socket.emit('started');
 
   // obj_bgm.animate({volume: 0}, 1500);
   // setTimeout(function(){

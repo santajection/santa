@@ -46,9 +46,29 @@ socket.on('connect', function () {
     console.log('change_scene', msg);
     // socket.on('change_scene', {method: 'change_scene', options: {???}, timestamp: 12323422224123}): 画面遷移指示
     switch (msg.options.scene) {
-      // case "init":
-      //   init(msgObj.uuids, msgObj.pos);
-      //   break;
+      case "init":
+        var dummy_uuids = {
+          one: {
+            color: "red"
+          },
+          two: {
+            color: "blu"
+          },
+          three: {
+            color: "yel"
+          },
+          four: {
+            color: "gre"
+          }
+        }
+        var pos = {
+          "red": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+          "blu": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+          "gre": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+          "yel": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
+        }
+        init(dummy_uuids, pos);
+        break;
       case "pre":
         pre();
         break;
@@ -69,28 +89,6 @@ socket.on('connect', function () {
   })
   .on('initialize', function (msg) {
     console.log('initialize', msg);
-    var dummy_uuids = {
-      one: {
-        color: "red"
-      },
-      two: {
-        color: "blu"
-      },
-      three: {
-        color: "yel"
-      },
-      four: {
-        color: "gre"
-      }
-    }
-    var pos = {
-      "red": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-      "blu": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-      "gre": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-      "yel": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
-    }
-
-    init(dummy_uuids, pos);
     socket.emit('initialized', null);
   })
   .on('notify', function (msg) {

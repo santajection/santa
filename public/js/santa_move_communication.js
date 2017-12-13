@@ -97,7 +97,7 @@ socket.on('connect', function () {
   .on('santa_move', function (msg) {
     console.log('santa_move', msg);
     for (var color in msg.options['colors']) {
-      otasuke(color, msg.options['amount']);
+      otasuke(color, msg.options['ratio'], msg.options['amount']);
     }
   });
 

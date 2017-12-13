@@ -184,10 +184,10 @@ function debug() {
   }
 }
 
-function santamove(player, direction) {
-
+function santamove(player, direction, amount=1) {
+  console.log('santamove', player, direction, amount);
   // 1回呼ばれる毎にシグナルを追加する
-  player.signal[direction] += 1;
+  player.signal[direction] += amount;
 
   if (player.lock) {
     return;
@@ -544,7 +544,7 @@ function movePlane() {
         if (!move_keys[uuid].hasOwnProperty(direction)) continue;
 
         // サンタを上下左右に動かす
-        santamove(player, direction);
+        santamove(player, direction, move_keys[uuid][direction]);
 
         // 上下左右にはみ出さないように補正
         if (px2int(player.img.css("top")) < 0) player.img.css("top", 0);
@@ -686,11 +686,11 @@ $(function () {
   });
 });
 
-function otasuke(color, ratio) {
+function otasuke(color, ratio, amount=1) {
   for (uuid in obj_players) {
     if (obj_players[uuid].color == color &&
       Math.random() <= ratio) {
-      _communication_keys[uuid] = { k_up: 10 };
+      _communication_keys[uuid] = { k_up: amount };
     }
   }
 }

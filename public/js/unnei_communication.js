@@ -379,7 +379,7 @@ $(
 
       if (santa_keys) {
         // console.log(santa_keys);
-        socket.emit('santa_move', { colors: santa_keys, amount: parseFloat($('#config_santa_move_ratio').val()) });
+        socket.emit('santa_move', { colors: santa_keys, ratio: parseFloat($('#config_santa_move_ratio').val()), amount: 1 });
         // SendMsg("message", { method: "santa_move", options: { santa_keys: santa_keys } });
       }
       delete keys[e.keyCode];

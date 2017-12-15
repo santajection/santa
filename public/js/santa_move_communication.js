@@ -24,8 +24,8 @@ socket.on('connect', function () {
     socket.emit('started', null);
   })
   .on('mobile_move', function (msg) {
-    for (var uuid in msgObj.options["santa_keys"]) {
-      _communication_keys[uuid] = { k_up: msgObj.options["santa_keys"][uuid] };
+    for (var uuid in msg.options.uuids) {
+      _communication_keys[uuid] = { k_up: msg.options.uuids[uuid] };
     }
   })
   .on('join', function (msg) {

@@ -184,7 +184,7 @@ function debug() {
   }
 }
 
-function santamove(player, direction, amount=1) {
+function santamove(player, direction, amount = 1) {
   console.log('santamove', player, direction, amount);
   // 1回呼ばれる毎にシグナルを追加する
   player.signal[direction] += amount;
@@ -300,7 +300,7 @@ function santa_goal_anime(player) {
     santa_goal_sori_ride(player.uuid);
   } else {
     if (player.image_id % 3 == 0) {
-      SendMsg("unnei", { name: "yojinobori", method: "play" });
+      socket.emit('sound', { name: "yojinobori", method: "play" });
       //bgm_yojinobori.play();
     }
     change_image_src(player.img, player.image_id);
@@ -329,7 +329,7 @@ function santa_goal_sori_ride(uuid) {
   player.name.hide();
   player.img.css('z-index', Number($("#sori").css('z-index')) - 1);
   // そりに乗る
-  SendMsg("unnei", { name: "goal", method: "play" });
+  socket.emit('sound', { name: "goal", method: "play" });
   //    bgm_goal.play();
   if (player.image_id == 0) {
     // 初期化処理
@@ -408,7 +408,7 @@ function santa_hitstop(player) {
   set_name_pos(player);
   var prev_src = player.img.attr("src");
   player.img.attr({ src: "image/down" + player.img_dir + "s/1.png" });
-  SendMsg("unnei", { name: "hit", method: "play" });
+  socket.emit('sound', { name: "hit", method: "play" });
   hit_animation(player, prev_src);
 }
 
@@ -525,7 +525,7 @@ function movePlane() {
     if (toppos <= GOAL_LINE && player.state == STATE_MOVING) {
       player.img.stop();
       console.log('goaled', player.uuid);
-      socket.emit('goaled', {id: player.uuid});
+      socket.emit('goaled', { id: player.uuid });
       goalAnimation(player); //todo
       // alert();
     }
@@ -686,7 +686,7 @@ $(function () {
   });
 });
 
-function otasuke(color, ratio, amount=1) {
+function otasuke(color, ratio, amount = 1) {
   for (uuid in obj_players) {
     if (obj_players[uuid].color == color &&
       Math.random() <= ratio) {
@@ -763,7 +763,7 @@ function specialMove(uuids) {
     set_name_pos(player);
     var prev_src = player.img.attr("src");
     player.img.attr({ src: "image/down" + player.img_dir + "s/1.png" });
-    SendMsg("unnei", { name: "hit", method: "play" });
+    socket.emit('sound', { name: "hit", method: "play" });
     hit_animation(player, prev_src);
   }
 }
@@ -835,7 +835,7 @@ function init(uuids, window_pos) {
   obj_sori.attr("src", "image/sleigh1/sleigh.png");
   obj_sori.removeClass("refrect");
 
-  SendMsg("unnei", { name: "obj_bgm", method: "pause_if_exist" });
+  socket.emit('sound', { name: "obj_bgm", method: "pause_if_exist" });
   // if(obj_bgm){
   //     obj_bgm.pause();
   // }
@@ -894,7 +894,7 @@ function timeUp() {
   clearInterval(window_timer);
   window_timer = null;
 
-  SendMsg("unnei", { name: "obj_bgm", method: "pause_if_exist" });
+  socket.emit('sound', { name: "obj_bgm", method: "pause_if_exist" });
   var all_player_goal = true;
   for (var uuid in obj_players) {
     if (obj_players[uuid].state != STATE_GOAL) {
@@ -1007,7 +1007,7 @@ function warpAnimation2(uuid) {
     setTimeout(function () { warpAnimation2(uuid); }, 100);
   } else {
     setTimeout(function () {
-      SendMsg("unnei", { name: "warp", method: "obj_overwrite" });
+      socket.emit('sound', { name: "warp", method: "obj_overwrite" });
       // obj_bgm = bgm_warp;
       // obj_bgm.play();
 
@@ -1083,7 +1083,7 @@ function soriAnimationStart() {
 function soriAnimation() {
   // ソリの動き始めアニメーションフレームアウトまで
   var idx = obj_sori.image_id;
-  SendMsg("unnei", { name: "fin", idx: idx, method: "soriAnimation" });
+  socket.emit('sound', { name: "fin", idx: idx, method: "soriAnimation" });
 
   // if (idx > 5 && obj_bgm != bgm_fin){
   //     // ソリの動き始めで音楽を鳴らす
@@ -1363,7 +1363,7 @@ function readyGo(delay1 = 5300, delay2 = 3200) {
   $("#screen_rule").hide();
   $("#screen_ouen").hide();
 
-  SendMsg("unnei", { name: "start", method: "obj_overwrite" });
+  socket.emit('sound', { name: "start", method: "obj_overwrite" });
   // obj_bgm = bgm_start;
   // obj_bgm.play();
   setTimeout(function () {
@@ -1385,7 +1385,7 @@ function readyGo2() {
   $("#screen_don").show();
   $("#screen_don").fadeOut(3000);
   //bgm開始
-  socket.emit('bgm', { name: "play", method: "readyGo2" })
+  socket.emit('sound', { name: "play", method: "readyGo2" })
   socket.emit('started');
 
   // obj_bgm.animate({volume: 0}, 1500);

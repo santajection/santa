@@ -56,7 +56,48 @@ socket.on('connect', function (msg) {
   console.log("connect");
   document.getElementById("connectId").innerHTML = "あなたの接続ID::" + socket.io.engine.id;
 
-});
+})
+  .on('sound', function (msg) {
+    console.log('sound');
+    sound_name = msg.options.name;
+    switch (msg.options.method) {
+      // 以下、BGM
+      case "play":
+        bgmAudio[sound_name].play();
+        break;
+      case "pause_if_exist":
+
+        if (obj_bgm) {
+          obj_bgm.pause();
+        }
+        break;
+      case "obj_overwrite":
+        obj_bgm = bgmAudio[sound_name];
+        obj_bgm.play();
+        break;
+      case "soriAnimation":
+
+        if (msg.options.idx > 5 && obj_bgm != bgm_fin) {
+          // ソリの動き始めで音楽を鳴らす
+          console.log("soriAnimation");
+          obj_bgm = bgm_fin;
+          obj_bgm.pause();
+          obj_bgm.play();
+          obj_bgm.animate({ volume: 1.0 }, 4000);
+        }
+        break;
+      case "readyGo2":
+        obj_bgm.animate({ volume: 0 }, 1500);
+        setTimeout(function () {
+          obj_bgm = bgm_play;
+          obj_bgm.loop = "true";
+          obj_bgm.currentTime = 0;
+          obj_bgm.play();
+          obj_bgm.animate({ volume: 1 }, 2000);
+        }, 1500);
+        break;
+    }
+  });
 
 // メッセージを受けたとき
 socket.on('message', function (msg) {
@@ -106,41 +147,6 @@ socket.on('message', function (msg) {
           var gadgetNum = msgObj.options["gadget"];
           break;
 
-        // 以下、BGM
-        case "play":
-          bgmAudio[msgObj.name].play();
-          break;
-        case "pause_if_exist":
-
-          if (obj_bgm) {
-            obj_bgm.pause();
-          }
-          break;
-        case "obj_overwrite":
-          obj_bgm = bgmAudio[msgObj.name];
-          obj_bgm.play();
-          break;
-        case "soriAnimation":
-
-          if (msgObj.idx > 5 && obj_bgm != bgm_fin) {
-            // ソリの動き始めで音楽を鳴らす
-            console.log("soriAnimation");
-            obj_bgm = bgm_fin;
-            obj_bgm.pause();
-            obj_bgm.play();
-            obj_bgm.animate({ volume: 1.0 }, 4000);
-          }
-          break;
-        case "readyGo2":
-          obj_bgm.animate({ volume: 0 }, 1500);
-          setTimeout(function () {
-            obj_bgm = bgm_play;
-            obj_bgm.loop = "true";
-            obj_bgm.currentTime = 0;
-            obj_bgm.play();
-            obj_bgm.animate({ volume: 1 }, 2000);
-          }, 1500);
-          break;
         default:
       }
     } catch (error) {

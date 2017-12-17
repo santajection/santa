@@ -24,22 +24,27 @@ socket.on('connect', function () {
     socket.emit('started', null);
   })
   .on('mobile_move', function (msg) {
-    for (var uuid in msg.options.uuids) {
-      _communication_keys[uuid] = { k_up: msg.options.uuids[uuid] };
+    console.log('movile_move', msg);
+    for (var uuid in msg.options) {
+      _communication_keys[uuid] = { k_up: msg.options[uuid] };
     }
   })
   .on('join', function (msg) {
-    console.log('join');
+    console.log('join', msg);
+    console.log('join', msg.optins, msg.options.id, msg.options.color, msg.options["id"]);
     //     case "addSanta":
     // console.log("comu", msgObj.uuids);
-    // addSanta(msgObj.uuids);
+    uuid = {}
+    uuid[msg.options.id] = { color: msg.options.color };
+
+    addSanta(uuid);
     // break;
 
   })
   .on('glow_santa', function (msg) {
 
     //     case "specialMove":
-    // specialMove(msgObj.uuids);
+    specialMove(msg.options.uuids);
     // break;
   })
   .on('change_scene', function (msg) {

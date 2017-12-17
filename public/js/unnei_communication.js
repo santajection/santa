@@ -222,6 +222,10 @@ function init() {
   gestureStop();
 }
 
+function initialize() {
+  socket.emit('initialize');
+}
+
 function preBtn() {
   socket.emit('change_scene', { scene: 'pre' });
 }
@@ -304,6 +308,7 @@ function addSanta() {
     dummy_uuids[uuid] = { color: colors[uuid % colors.length] };
   }
   console.log("unei", dummy_uuids);
+  // socket.emit('join', {})
   SendMsg("message", {
     method: "addSanta",
     options: {

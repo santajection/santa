@@ -696,8 +696,11 @@ function otasuke(color, ratio, amount = 1) {
 }
 
 function addSanta(uuids) {
+  console.log('addSanta', uuids);
   for (uuid in uuids) {
+    console.log('uuid', uuid, uuids[uuid]);
     user = createUser(uuid, uuids[uuid].color);
+    console.log("user", user);
     obj_players[uuid] = user;
     obj_players[uuid].img.attr("src", "image/santa" + obj_players[uuid].img_dir + "s/1.png");
     obj_players[uuid].img.show()
@@ -708,9 +711,10 @@ function addSanta(uuids) {
 function createUser(uuid, color) {
   body = document.getElementById("anime_box");
   div = document.createElement('img');
-  div.id = "img-" + uuid;
-  body.appendChild(div);
-  obj = $("#" + div.id)
+  // div.id = "img-" + uuid;
+  obj = $(body.appendChild(div));
+  console.log('createUser', obj);
+  // obj = $("#" + div.id)
   css_config = [
     ["position", "absolute"],
     ["left", "0px"],
@@ -721,16 +725,18 @@ function createUser(uuid, color) {
   }
 
   namediv = document.createElement('div');
-  namediv.id = "name-" + uuid;
-  body.appendChild(namediv);
-  obj_name = $("#" + namediv.id)
+  // namediv.id = "name-" + uuid;
+  // body.appendChild(namediv);
+  // obj_name = $("#" + namediv.id)
+
+  obj_name = $(body.appendChild(namediv));
   obj_name.addClass("name")
   for (var i = 0; i < css_config.length; i++) {
     obj_name.css(css_config[i][0], css_config[i][1]);
     obj_name.text(uuid)
   }
   document.getElementsByTagName("body").item(0);
-
+  console.log(color, color_id);
   return {
     uuid: uuid,
     x: 0,
@@ -777,6 +783,7 @@ function init(uuids, window_pos) {
     $("#receiveMsg").hide();
     $("#errorMsg").hide();
   }
+  obj_players = {};
 
   // 各種オブジェクトの初期化
   for (uuid in uuids) {

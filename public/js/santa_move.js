@@ -2,6 +2,8 @@
 
 
 
+
+
 var obj_santa;
 var obj_windows;
 var obj_name;
@@ -1263,18 +1265,59 @@ function toujou_end() {
   // first_animation = 0;
 };
 
+// 登場して自動で退場する
+function toujou_start_end(color, name) {
+  console.log("toujou_start_end");
+
+  if (toujou_animation_moving == 1) {
+    // 既に他のサンタが登場中なので待機する
+    setTimeout(function () {
+      toujou_start(color, name);
+    }, 1000);
+  } else {
+    //登場する
+    toujou_animation_moving = 1;
+    reset_screen();
+    $("#screen_intro_bg").show();
+    toujou(color_id[color], name);
+    first_animation = 1;
+    toujou_animation();
+    // intro_santa.css("left", 1100);
+    intro_santa.animate({ left: "+=" + 500 }, 0);
+    intro_santa.animate({ left: "-=" + 500 }, 1000, 'linear');
+    intro_name.animate({ left: "+=" + 700 }, 0);
+    intro_name.animate({ left: "-=" + 700 }, 1000, 'linear');
+      setTimeout(function () {
+        toujou_animation_moving = 0;
+        first_animation = 0;
+      }, 1000);
+    // intro_santa.css("left", 1100);
+  }
+};
+
+function santaExit() {
+  intro_santa.animate({ left: "-=" + 600 }, 1000, 'linear');
+  intro_name.animate({ left: "-=" + 1000 }, 1100, 'linear');
+}
 var first_animation = 0;
+var nowMoving = 0; // 1なら今移動中で他のサンタに登場されたくない状態
 function toujou_start(color, name) {
   console.log("toujou_start");
-  console.log("toujou_animation_moving=" + toujou_animation_moving);
 
   if (toujou_animation_moving == 1) {
     console.log(toujou_animation_moving);
-    intro_santa.animate({ left: "-=" + 600 }, 1000, 'linear');
-    intro_name.animate({ left: "-=" + 1000 }, 1100, 'linear');
+    if (nowMoving == 1) {
+      setTimeout(function () {
+        toujou_start(color, name);
+      }, 1000);
+      return;
+    }
+    nowMoving = 1;
+    santaExit();
     setTimeout(function () { toujou_animation_moving = 0; toujou_start(color, name); }, 1200);
     return;
   } else {
+    nowMoving = 1;
     reset_screen();
     $("#screen_intro_bg").show();
     toujou(color_id[color], name);
@@ -1290,6 +1333,9 @@ function toujou_start(color, name) {
     intro_santa.animate({ left: "-=" + 500 }, 1000, 'linear');
     intro_name.animate({ left: "+=" + 700 }, 0);
     intro_name.animate({ left: "-=" + 700 }, 1000, 'linear');
+    setTimeout(function () {
+      nowMoving = 0;
+    }, 1000);
   }
   // intro_santa.animate({left:intro_santa.left_pos}, 1000);
 };
@@ -1338,17 +1384,6 @@ var toujou_animation_num_iterate = 30;
 var toujou_animation_moving = 0;
 function toujou_animation() {
   if (toujou_animation_moving > 0) {
-    // if (first_animation > 0){
-    // console.log("toujou_animation");
-    // console.log("img.id:"+intro_santa.image_id);
-    // console.log(intro_santa);
-    // console.log("toujou_animation:" + intro_santa.attr("src"));
-    // if (intro_santa.image_id >= toujou_animation_num_iterate){
-    //     intro_santa.image_id = 1;
-    //     // intro_santa.attr({src:prev_src});
-    //     // intro_santa.state=STATE_MOVING;
-    // }else{
-    // console.log(intro_santa);
     var anime_idx = intro_santa.image_id % toujou_anime_step[intro_santa.id].length;
     // console.log("anime_idx"+anime_idx);
     var next_img_id = toujou_anime_step[intro_santa.id][anime_idx][0];

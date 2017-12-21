@@ -74,6 +74,8 @@ QWERのキーを押すと各キーについて赤青黄緑のサンタが登る�
 <button onclick="readyGo()">ゲームスタート：よういどん</button>  </br> </br>
 
 <h2>状態変更</h2>
+
+ゲームid:<input id="initialize_id" type="text" name="initialize_id" value="1"></input>
 <button onclick="initialize()">参加受付状態にする</button> </br>
 <input id="mobile_message" type="text" value=""></input>
 <button onclick="notify_mobile()">モバイルにメッセージを送る</button> </br>
@@ -89,6 +91,7 @@ QWERのキーを押すと各キーについて赤青黄緑のサンタが登る�
 <button onclick="dev_readyGo()">ゲームスタート（開発用、遅延なし）</button>  </br> </br>
 
 <h2>サンタの名前</h2>
+<button onclick="santaExit()">サンタ退出</button> </br>
 赤サンタ：<input id="name_red" type="text" name="name_red" value="ごとう君"></input>
 <button onclick="toujouBtn('red')">登場（赤）</button>
 </br>

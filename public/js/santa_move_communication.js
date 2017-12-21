@@ -31,15 +31,10 @@ socket.on('connect', function () {
   })
   .on('join', function (msg) {
     console.log('join', msg);
-    // console.log('join', msg.optins, msg.options.id, msg.options.color, msg.options["id"]);
-    //     case "addSanta":
-    // console.log("comu", msgObj.uuids);
-    // uuid = {}
-    // uuid[msg.options.id] = { color: msg.options.color };
 
     addSanta(msg.options.id, msg.options.color, msg.options.name);
-    // break;
-
+    console.log("color" + msg.options.color + " name=" + msg.options.name);
+    toujou_start(msg.options.color, msg.options.name);
   })
   .on('glow_santa', function (msg) {
 
@@ -89,9 +84,13 @@ socket.on('connect', function () {
       case "toujou":
         console.log("color" + msg.options.color + " name=" + msg.options.name);
         toujou_start(msg.options.color, msg.options.name);
+        // toujou_start_end(msg.options.color, msg.options.name);
         break;
       case "addSanta":
         console.log("#####comu", msg.options.uuids);
+        break;
+      case "santaExit":
+        santaExit();
         break;
     }
   })

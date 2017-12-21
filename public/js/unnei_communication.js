@@ -223,7 +223,7 @@ function init() {
 }
 
 function initialize() {
-  socket.emit('initialize');
+  socket.emit('initialize', {active_game_id: parseInt($("#initialize_id").val())});
 }
 
 function preBtn() {
@@ -309,16 +309,20 @@ function addSanta() {
   }
   console.log("unei", dummy_uuids);
   // socket.emit('join', {})
-  // SendMsg("change_scene", {
-  //   scene: "addSanta",
-  //   method: "addSanta",
-  //   options: {
-  //     uuids: dummy_uuids,
-  //     timestamp: new Date()
-  //   },
-  //   uuids: dummy_uuids,
-  //   timestamp: new Date()
-  // })
+  SendMsg("change_scene", {
+    scene: "addSanta",
+    method: "addSanta",
+    options: {
+      uuids: dummy_uuids,
+      timestamp: new Date()
+    },
+    uuids: dummy_uuids,
+    timestamp: new Date()
+  })
+}
+
+function santaExit() {
+  socket.emit('change_scene', { scene: 'santaExit' });
 }
 
 function notify_mobile() {

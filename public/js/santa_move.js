@@ -660,31 +660,32 @@ function setImages() {
 $(function () {
   console.log($("#game_box"));
   load_images();
-  dummy_uuids = {
-    "one": {
-      color: "red"
-    },
-    "two": {
-      color: "blu"
-    },
-    "three": {
-      color: "yel"
-    },
-    "four": {
-      color: "gre"
-    }
-  };
-  window_pos = {
-    "red": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-    "blu": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-    "gre": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-    "yel": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
-  };
+  // dummy_uuids = {
+  //   "one": {
+  //     color: "red"
+  //   },
+  //   "two": {
+  //     color: "blu"
+  //   },
+  //   "three": {
+  //     color: "yel"
+  //   },
+  //   "four": {
+  //     color: "gre"
+  //   }
+  // };
+  // window_pos = {
+  //   "red": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+  //   "blu": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+  //   "gre": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+  //   "yel": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
+  // };
   waitUntil(function () {
     return num_loaded_images < num_images;
   }, 150, function () {
     setImages();
-    init(dummy_uuids, window_pos)
+    createInitUsers();
+    init()
   });
 });
 
@@ -771,15 +772,21 @@ function specialMove(uuids) {
   }
 }
 
-function init(uuids, window_pos) {
-  $("#game_box").fadeIn("100");
-  $("#game_box").show();
-  console.log("image loaded");
-  if (DEBUG_LEVEL == 0) {
-    $("#connectId").hide();
-    $("#receiveMsg").hide();
-    $("#errorMsg").hide();
-  }
+function createInitUsers() {
+  uuids = {
+    "one": {
+      color: "red"
+    },
+    "two": {
+      color: "blu"
+    },
+    "three": {
+      color: "yel"
+    },
+    "four": {
+      color: "gre"
+    }
+  };
   obj_players = {};
 
   // 各種オブジェクトの初期化
@@ -794,6 +801,43 @@ function init(uuids, window_pos) {
     yel: $("#window_yel"),
     gre: $("#window_gre")
   };
+}
+
+function init() {
+  $("#game_box").fadeIn("100");
+  $("#game_box").show();
+  console.log("image loaded");
+  if (DEBUG_LEVEL == 0) {
+    $("#connectId").hide();
+    $("#receiveMsg").hide();
+    $("#errorMsg").hide();
+  }
+  // window_pos = {}
+  for (uuid in obj_players) {
+    obj_players[uuid].img.attr("src", "image/santa" + obj_players[uuid].img_dir + "s/1.png");
+    obj_players[uuid].img.show()
+    // window_pos[uuid] = getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500);
+  }
+  window_pos = {
+    "red": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+    "blu": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+    "gre": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
+    "yel": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
+  };
+  // obj_players = {};
+
+  // // 各種オブジェクトの初期化
+  // for (uuid in uuids) {
+  //   obj_players[uuid] = createUser(uuid, uuids[uuid].color, uuid)
+  //   obj_players[uuid].img.attr("src", "image/santa" + obj_players[uuid].img_dir + "s/1.png");
+  //   obj_players[uuid].img.show()
+  // }
+  // obj_windows = {
+  //   red: $("#window_red"),
+  //   blu: $("#window_blu"),
+  //   yel: $("#window_yel"),
+  //   gre: $("#window_gre")
+  // };
   // 画像の読み込みタイミングによって位置がずれるので少し待つ
   setTimeout(function () {
     for (var color in obj_windows) {

@@ -31,13 +31,13 @@ socket.on('connect', function () {
   })
   .on('join', function (msg) {
     console.log('join', msg);
-    console.log('join', msg.optins, msg.options.id, msg.options.color, msg.options["id"]);
+    // console.log('join', msg.optins, msg.options.id, msg.options.color, msg.options["id"]);
     //     case "addSanta":
     // console.log("comu", msgObj.uuids);
-    uuid = {}
-    uuid[msg.options.id] = { color: msg.options.color };
+    // uuid = {}
+    // uuid[msg.options.id] = { color: msg.options.color };
 
-    addSanta(uuid);
+    addSanta(msg.options.id, msg.options.color, msg.options.name);
     // break;
 
   })
@@ -48,7 +48,7 @@ socket.on('connect', function () {
     // break;
   })
   .on('change_scene', function (msg) {
-    console.log('change_scene', msg);
+    console.log('change_scene', msg, msg.options.scene);
     // socket.on('change_scene', {method: 'change_scene', options: {???}, timestamp: 12323422224123}): 画面遷移指示
     switch (msg.options.scene) {
       case "init":
@@ -89,6 +89,9 @@ socket.on('connect', function () {
       case "toujou":
         console.log("color" + msg.options.color + " name=" + msg.options.name);
         toujou_start(msg.options.color, msg.options.name);
+        break;
+      case "addSanta":
+        console.log("#####comu", msg.options.uuids);
         break;
     }
   })

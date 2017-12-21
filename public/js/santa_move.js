@@ -582,7 +582,6 @@ function reset_santa_pos() {
   // var top  = 700;
   var top = 900;
   // var left = SANTA_MARGIN - 2*step;
-  console.log("step" + step);
   for (var uuid in obj_players) {
     left = SANTA_MARGIN + (color_id[obj_players[uuid].color] - 1) * step
     obj_players[uuid].img.css("left", (left + Math.random() * 100));
@@ -695,25 +694,20 @@ function otasuke(color, ratio, amount = 1) {
   }
 }
 
-function addSanta(uuids) {
-  console.log('addSanta', uuids);
-  for (uuid in uuids) {
-    console.log('uuid', uuid, uuids[uuid]);
-    user = createUser(uuid, uuids[uuid].color);
-    console.log("user", user);
-    obj_players[uuid] = user;
-    obj_players[uuid].img.attr("src", "image/santa" + obj_players[uuid].img_dir + "s/1.png");
-    obj_players[uuid].img.show()
-  }
-  reset_santa_pos();
+function addSanta(uuid, color, name) {
+  console.log('addSanta', uuid, color, name);
+  user = createUser(uuid, color, name);
+  obj_players[uuid] = user;
+  obj_players[uuid].img.attr("src", "image/santa" + obj_players[uuid].img_dir + "s/1.png");
+  obj_players[uuid].img.show()
+  // reset_santa_pos();
 }
 
-function createUser(uuid, color) {
+function createUser(uuid, color, name) {
   body = document.getElementById("anime_box");
   div = document.createElement('img');
   // div.id = "img-" + uuid;
   obj = $(body.appendChild(div));
-  console.log('createUser', obj);
   // obj = $("#" + div.id)
   css_config = [
     ["position", "absolute"],
@@ -733,7 +727,7 @@ function createUser(uuid, color) {
   obj_name.addClass("name")
   for (var i = 0; i < css_config.length; i++) {
     obj_name.css(css_config[i][0], css_config[i][1]);
-    obj_name.text(uuid)
+    obj_name.text(name)
   }
   document.getElementsByTagName("body").item(0);
   console.log(color, color_id);
@@ -787,7 +781,7 @@ function init(uuids, window_pos) {
 
   // 各種オブジェクトの初期化
   for (uuid in uuids) {
-    obj_players[uuid] = createUser(uuid, uuids[uuid].color)
+    obj_players[uuid] = createUser(uuid, uuids[uuid].color, uuid)
     obj_players[uuid].img.attr("src", "image/santa" + obj_players[uuid].img_dir + "s/1.png");
     obj_players[uuid].img.show()
   }

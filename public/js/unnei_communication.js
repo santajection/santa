@@ -309,15 +309,16 @@ function addSanta() {
   }
   console.log("unei", dummy_uuids);
   // socket.emit('join', {})
-  SendMsg("message", {
-    method: "addSanta",
-    options: {
-      uuids: dummy_uuids,
-      timestamp: new Date()
-    },
-    uuids: dummy_uuids,
-    timestamp: new Date()
-  })
+  // SendMsg("change_scene", {
+  //   scene: "addSanta",
+  //   method: "addSanta",
+  //   options: {
+  //     uuids: dummy_uuids,
+  //     timestamp: new Date()
+  //   },
+  //   uuids: dummy_uuids,
+  //   timestamp: new Date()
+  // })
 }
 
 function notify_mobile() {

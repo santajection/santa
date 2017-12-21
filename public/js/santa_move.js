@@ -575,18 +575,21 @@ function set_name_pos(player) {
   player.name.css("top", top);
 }
 
-function reset_santa_pos() {
+function reset_santa_pos(uuid) {
   // サンタの位置を初期値（中央に移動）
   // var MARGIN = 50;
   var step = (WIDTH - SANTA_MARGIN) / 4;
   // var top  = 700;
   var top = 900;
   // var left = SANTA_MARGIN - 2*step;
-  for (var uuid in obj_players) {
     left = SANTA_MARGIN + (color_id[obj_players[uuid].color] - 1) * step
     obj_players[uuid].img.css("left", (left + Math.random() * 100));
     obj_players[uuid].img.css("top", (top + Math.random() * 100));
     set_name_pos(obj_players[uuid]);
+}
+function reset_santa_pos_all() {
+  for (uuid in obj_players) {
+    reset_santa_pos(uuid);
   }
 }
 function getRandomInt(min, max) {
@@ -700,7 +703,7 @@ function addSanta(uuid, color, name) {
   obj_players[uuid] = user;
   obj_players[uuid].img.attr("src", "image/santa" + obj_players[uuid].img_dir + "s/1.png");
   obj_players[uuid].img.show()
-  // reset_santa_pos();
+  reset_santa_pos(uuid);
 }
 
 function createUser(uuid, color, name) {
@@ -824,7 +827,7 @@ function init(uuids, window_pos) {
   // 画面配置
 
   reset_screen();
-  reset_santa_pos();
+  reset_santa_pos_all();
   reset_window_pos(window_pos);
   toujou_end();
 

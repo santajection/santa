@@ -27,6 +27,8 @@ var STATE_MOVING = 1;
 var STATE_HITTED = 2;
 var STATE_GOAL = 3;
 var STATE_WAIT = 4;
+var MAX_MOVE = 3; // サンタがフレームごとに登る最大値
+var santa_window_pos_split = 6; // サンタのx座標を各色ごとに分ける。そのわけかたの数。かぶらないようにする
 
 var STATE_CLOSED_NOT_MOVE = 5; // 窓は閉まっていてアニメーションも動いていない
 var STATE_CLOSED_AND_MOVE = 6; // 窓は閉まっていてアニメーションは動いている
@@ -47,6 +49,34 @@ var santa_sig = {
 var color_id = { red: 1, yel: 3, blu: 2, gre: 4 };
 var santa_pos = { red: undefined, blu: undefined, yel: undefined, gre: undefined };
 var santa_lock = { red: false, blu: false, gre: false, yel: false };
+var num_santa = { red: 0, yel: 0, blu: 0, gre: 0 } // ゲーム参加しているサンタの数
+var santa_window_pos = {};
+
+// from https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
+function shuffle(a) {
+  var j, x, i;
+  for (i = a.length - 1; i > 0; i--) {
+      j = Math.floor(Math.random() * (i + 1));
+      x = a[i];
+      a[i] = a[j];
+      a[j] = x;
+  }
+}
+
+function init_santa_window_pos() {
+  arr = [];
+  santa_window_pos = {};
+  for (var i = 0; i < santa_window_pos_split; i++) {
+    arr.push(i);
+  }
+  for (color in color_id) {
+    santa_window_pos[color] = [];
+    shuffle(arr);
+    for (var i = 0; i < santa_window_pos_split; i++) {
+      santa_window_pos[color].push(arr[i]);
+    }
+  }
+}
 
 var tonakai_src = "image/tonakai/tonakai";
 
@@ -324,6 +354,7 @@ function santa_goal1(player) {
   // anime
 }
 
+// ゴール後そりに乗る
 function santa_goal_sori_ride(uuid) {
   var player = obj_players[uuid];
   // そりに乗るまではサンタはそりの前面にいるが
@@ -577,7 +608,7 @@ function set_name_pos(player) {
   player.name.css("top", top);
 }
 
-function reset_santa_pos(uuid) {
+function reset_santa_pos(uuid, left_pos) {
   // サンタの位置を初期値（中央に移動）
   // var MARGIN = 50;
   var step = (WIDTH - SANTA_MARGIN) / 4;
@@ -585,13 +616,16 @@ function reset_santa_pos(uuid) {
   var top = 900;
   // var left = SANTA_MARGIN - 2*step;
     left = SANTA_MARGIN + (color_id[obj_players[uuid].color] - 1) * step
-    obj_players[uuid].img.css("left", (left + Math.random() * 100));
-    obj_players[uuid].img.css("top", (top + Math.random() * 100));
+    obj_players[uuid].img.css("left", (left - 10 + left_pos * 22));
+    obj_players[uuid].img.css("top", (top + Math.random() * 110));
     set_name_pos(obj_players[uuid]);
 }
 function reset_santa_pos_all() {
+  santa_counter = { red: 0, blu: 0, yel: 0, gre: 0 };
   for (uuid in obj_players) {
-    reset_santa_pos(uuid);
+    color = obj_players[uuid].color;
+    reset_santa_pos(uuid, santa_window_pos[color][santa_counter[color] % santa_window_pos_split]);
+    santa_counter[color]++;
   }
 }
 function getRandomInt(min, max) {
@@ -659,43 +693,11 @@ function setImages() {
   $("#window_yel").attr({ src: "image/window/1.png" });
 }
 
-$(function () {
-  console.log($("#game_box"));
-  load_images();
-  // dummy_uuids = {
-  //   "one": {
-  //     color: "red"
-  //   },
-  //   "two": {
-  //     color: "blu"
-  //   },
-  //   "three": {
-  //     color: "yel"
-  //   },
-  //   "four": {
-  //     color: "gre"
-  //   }
-  // };
-  // window_pos = {
-  //   "red": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-  //   "blu": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-  //   "gre": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500),
-  //   "yel": getRandomInt(GOAL_LINE + SANTA_MARGIN * 2, 500)
-  // };
-  waitUntil(function () {
-    return num_loaded_images < num_images;
-  }, 150, function () {
-    setImages();
-    createInitUsers();
-    init()
-  });
-});
-
 function otasuke(color, ratio, amount = 1) {
   for (uuid in obj_players) {
     if (obj_players[uuid].color == color &&
       Math.random() <= ratio) {
-      _communication_keys[uuid] = { k_up: amount };
+      _communication_keys[uuid] = { k_up: Math.min(MAX_MOVE, amount) };
     }
   }
 }
@@ -706,7 +708,8 @@ function addSanta(uuid, color, name) {
   obj_players[uuid] = user;
   obj_players[uuid].img.attr("src", "image/santa" + obj_players[uuid].img_dir + "s/1.png");
   obj_players[uuid].img.show()
-  reset_santa_pos(uuid);
+  reset_santa_pos(uuid, santa_window_pos[color][num_santa[color] % santa_window_pos_split]);
+  num_santa[color]++;
 }
 
 function createUser(uuid, color, name) {
@@ -797,15 +800,10 @@ function createInitUsers() {
     obj_players[uuid].img.attr("src", "image/santa" + obj_players[uuid].img_dir + "s/1.png");
     obj_players[uuid].img.show()
   }
-  obj_windows = {
-    red: $("#window_red"),
-    blu: $("#window_blu"),
-    yel: $("#window_yel"),
-    gre: $("#window_gre")
-  };
 }
 
 function init() {
+  // ゲーム画面にする
   $("#game_box").fadeIn("100");
   $("#game_box").show();
   console.log("image loaded");
@@ -933,6 +931,8 @@ function timeSpend() {
 }
 
 function timeUp() {
+  console.log('ended');
+  socket.emit('ended');
   if (gameTimer) {
     clearInterval(gameTimer);
     gameTimer = null;
@@ -1193,10 +1193,6 @@ function xmas() {
         $("#screen_fin1").hide();
         $("#screen_white").fadeOut(500);
         $("#merryxmas").fadeIn("slow");
-        setTimeout(function () {
-          console.log('ended');
-          socket.emit('ended');
-        }, 3000);
         // $("#white_box").fadeIn("slow");
       }, 1000);
     }, 3900);
@@ -1484,3 +1480,28 @@ function readyGo2() {
 function end() {
 
 }
+function createWindows() {
+  obj_windows = {
+    red: $("#window_red"),
+    blu: $("#window_blu"),
+    yel: $("#window_yel"),
+    gre: $("#window_gre")
+  };
+}
+
+function main() {
+  init_santa_window_pos();
+  console.log('santa_window_pos', santa_window_pos);
+  console.log($("#game_box"));
+  load_images();
+  waitUntil(function () {
+    return num_loaded_images < num_images;
+  }, 150, function () {
+    setImages();
+    // createInitUsers();
+    createWindows();
+    init()
+  });
+}
+
+$(main);

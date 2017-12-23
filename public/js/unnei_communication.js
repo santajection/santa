@@ -223,7 +223,8 @@ function init() {
 }
 
 function initialize() {
-  socket.emit('initialize', {active_game_id: parseInt($("#initialize_id").val())});
+  console.log('initialize', $("#initialize_id").val());
+  socket.emit('initialize', {active_game_id: $("#initialize_id").val()});
 }
 
 function preBtn() {
@@ -309,16 +310,22 @@ function addSanta() {
   }
   console.log("unei", dummy_uuids);
   // socket.emit('join', {})
-  SendMsg("change_scene", {
-    scene: "addSanta",
-    method: "addSanta",
-    options: {
-      uuids: dummy_uuids,
-      timestamp: new Date()
-    },
-    uuids: dummy_uuids,
-    timestamp: new Date()
-  })
+  var uuid = Math.floor(Math.random() * 100000);
+  console.log(Math.floor( Math.random() * 100) % 4, colors[Math.floor( Math.random() * 100)%4])
+  socket.emit('change_scene', { scene: 'addSanta', uuid: uuid, color: colors[Math.floor( Math.random() * 100)%4], name:uuid });
+  // SendMsg("change_scene", {
+  //   scene: "addSanta",
+  //   method: "addSanta",
+  //   options: {
+  //     uuid: uuid,
+  //     color: "red",
+  //     name: uuid,
+  //     // uuids: dummy_uuids,
+  //     timestamp: new Date()
+  //   },
+  //   uuids: dummy_uuids,
+  //   timestamp: new Date()
+  // })
 }
 
 function santaExit() {

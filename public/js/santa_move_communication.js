@@ -24,9 +24,9 @@ socket.on('connect', function () {
     socket.emit('started', null);
   })
   .on('mobile_move', function (msg) {
-    console.log('movile_move', msg);
+    // console.log('movile_move', msg);
     for (var uuid in msg.options) {
-      _communication_keys[uuid] = { k_up: msg.options[uuid] };
+      _communication_keys[uuid] = { k_up: Math.min(MAX_MOVE,  msg.options[uuid]) };
     }
   })
   .on('join', function (msg) {
@@ -87,7 +87,9 @@ socket.on('connect', function () {
         // toujou_start_end(msg.options.color, msg.options.name);
         break;
       case "addSanta":
-        console.log("#####comu", msg.options.uuids);
+
+        addSanta(msg.options.uuid, msg.options.color, msg.options.name);
+        console.log("#####comu", msg.options.uuid);
         break;
       case "santaExit":
         santaExit();

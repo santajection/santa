@@ -27,7 +27,7 @@ var STATE_MOVING = 1;
 var STATE_HITTED = 2;
 var STATE_GOAL = 3;
 var STATE_WAIT = 4;
-var MAX_MOVE = 3; // サンタがフレームごとに登る最大値
+var MAX_MOVE = 2; // サンタがフレームごとに登る最大値
 var santa_window_pos_split = 6; // サンタのx座標を各色ごとに分ける。そのわけかたの数。かぶらないようにする
 
 var STATE_CLOSED_NOT_MOVE = 5; // 窓は閉まっていてアニメーションも動いていない
@@ -1465,7 +1465,7 @@ function readyGo2() {
   $("#screen_don").fadeOut(3000);
   //bgm開始
   socket.emit('sound', { name: "play", method: "readyGo2" })
-  socket.emit('started');
+  // socket.emit('started');
 
   // obj_bgm.animate({volume: 0}, 1500);
   // setTimeout(function(){

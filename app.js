@@ -55,6 +55,10 @@ app.get('/', function(req, res, next) {
   res.render('index', {hubserver: config.hubserver});
 });
 
+app.get('/unnei', function(req, res, next) {
+  res.render('unnei', {hubserver: config.hubserver});
+});
+
 // server起動
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){

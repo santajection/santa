@@ -2,7 +2,7 @@ var DEBUG_LEVEL = 0; // 0: release, 1:debug
 // var SERVER = "http://192.168.11.3:3000";
 // var SERVER = "http://localhost:3000";
 // var SERVER = "http://santamobile.herokuapp.com";
-var SERVER = "http://santaapp.osoken.jp"
+//var SERVER = "http://santaapp.osoken.jp"
 var SERVER_CLOUD = "http://santawall.herokuapp.com";
 var useCloud = false;
 

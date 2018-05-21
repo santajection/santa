@@ -18,5 +18,3 @@ do
     convert "$f" -resize ${ratio} "${to_dir}/${f#*/}"
   done
 done
-# for f in santa4/*.png                                                                       (git)-[special_move] - (m3)kg86dev@gmail.com
-# convert $f -resize 25% santas4/${f#*/}

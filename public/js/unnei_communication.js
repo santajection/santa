@@ -124,29 +124,6 @@ socket.on('message', function (msg) {
           if (direction == "down")
             keys[k_down] = true;
           break;
-        case "gadget_move":
-          var gesture = msgObj.options["gesture"];
-          var gadgetNum = msgObj.options["gadgetNum"];
-          var count = msgObj.options["count"];
-          var color = gadgetToColorAndIdx(gadgetNum).color;
-          var index = gadgetToColorAndIdx(gadgetNum).index;
-
-          receivedCount[color][index]++;
-
-          $("#" + color + index + gesture)[0].innerHTML = count;
-          $("#" + color + index + "recv")[0].innerHTML = receivedCount[color][index];
-          break;
-        case "gadget_alive":
-          var gadgetNum = msgObj.options["gadgetNum"];
-          var state = msgObj.options["state"];
-          var color = gadgetToColorAndIdx(gadgetNum).color;
-          var index = gadgetToColorAndIdx(gadgetNum).index;
-          $("#" + color + index + "alive")[0].innerHTML = state;
-          break;
-        case "gadget_register_unnei":
-          var gadgetNum = msgObj.options["gadget"];
-          break;
-
         default:
       }
     } catch (error) {
@@ -219,7 +196,6 @@ function createSanta() {
 
 function init() {
   socket.emit('change_scene', { scene: 'init' });
-  gestureStop();
 }
 
 function initialize() {
@@ -275,7 +251,6 @@ function readyGo() {
   console.log('emit start');
   socket.emit('start');
   // SendMsg("message", { method: "start"});
-  setTimeout(gestureStart, 2000);
 }
 
 function timeUp() {
@@ -409,11 +384,6 @@ $(
     });
     // setInterval(controller, 100);
 
-    // gadget の初期値を読込
-    for (var color in colorToGadgetMap) {
-      $("#" + color + "0gadget")[0].value = colorToGadgetMap[color][0];
-      $("#" + color + "1gadget")[0].value = colorToGadgetMap[color][1];
-    }
 
     // checkAliveする
     // setInterval(checkAlive, 5000);
@@ -421,54 +391,3 @@ $(
 
   // TODO: keyをqwerにして、red blu gre yel　を全部移動できるようにする
 );
-
-
-/////////////////////////////////////////////////////
-//  ガジェットの管理に関する部分
-/////////////////////////////////////////////////////
-function setGadget(color, index) {
-  var gadgetNum = $("#" + color + index + "gadget")[0].value;
-  if (0 < gadgetNum && gadgetNum < 100) {
-    colorToGadgetMap[color][index] = gadgetNum;
-    updateGadegetColor(gadgetNum, color, index);
-  }
-}
-
-// index.htmlとsantaのgadgetNumを同期
-// color: red blu gre yel, index: 0 or 1
-function updateGadegetColor(gadgetNum, color, index) {
-  SendMsg("message", { method: "gadget_color_update", options: { gadgetNum: gadgetNum, color: color, index: index } });
-}
-
-
-function gestureStart() {
-  SendMsg("gadget", { method: "gStart", options: {} });
-}
-
-function gestureStop() {
-  SendMsg("gadget", { method: "gStop", options: {} });
-}
-
-function clearCount() {
-  var colors = ["red", "blu", "gre", "yel"];
-  for (var cidx in colors) {
-    var color = colors[cidx];
-    for (var index in [0, 1]) {
-      $("#" + color + index + "up")[0].innerHTML = 0;
-      $("#" + color + index + "byebye")[0].innerHTML = 0;
-      $("#" + color + index + "rotate")[0].innerHTML = 0;
-      $("#" + color + index + "recv")[0].innerHTML = 0;
-      receivedCount[color][index] = 0;
-    }
-  }
-  SendMsg("gadget", { method: "clearCount", options: {} });
-}
-
-function checkAlive() {
-  var colors = ["red", "blu", "gre", "yel"];
-  for (var color in colors) {
-    $("#" + colors[color] + "0" + "alive")[0].innerHTML = "";
-    $("#" + colors[color] + "1" + "alive")[0].innerHTML = "";
-  }
-  SendMsg("gadget", { method: "checkAlive", options: {} });
-}

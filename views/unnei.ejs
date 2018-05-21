@@ -14,15 +14,7 @@ var SERVER = "//<%= hubserver %>";
 <div id="connectId"></div><br/>
 <div id="receiveMsg"></div>
 
-<!--　サンタの選択 -->
-
-<!-- <h2>サンタの選択</h2> -->
-<!-- <input type="radio" name="santa" value="non" checked="checked">なし</input> -->
-<!-- <input type="radio" name="santa" value="red">赤サンタ</input> -->
-<!-- <input type="radio" name="santa" value="blu">青サンタ</input> -->
-<!-- <input type="radio" name="santa" value="yel">黄サンタ</input> -->
-<!-- <input type="radio" name="santa" value="gre">緑サンタ</input> -->
-
+<div style="display: none;">
 <h2>サンタの動き調整</h2>
 ネットワーク越しにゲームをする場合は遅延やロスがあるためここで微調整する</br>
 数値入力後反映ボタンを押すこと．なお、ゲーム画面を再表示するとクリアされる。</br>
@@ -50,6 +42,7 @@ var SERVER = "//<%= hubserver %>";
 </table>
 
 <button onclick="config()">反映</button>
+</div>
 
 <h2>サンタコントローラー</h2>
 QWERのキーを押すと各キーについて赤青黄緑のサンタが登る． </br>
@@ -84,6 +77,7 @@ QWERのキーを押すと各キーについて赤青黄緑のサンタが登る�
 <button onclick="notify_mobile()">モバイルにメッセージを送る</button> </br>
 </br> </br>
 
+<h2>開発用コマンド</h2>
 <button onclick="timeUp()">強制時間切れ</button>  </br>
 <button onclick="addSanta()">サンタ追加</button>  </br>
 
@@ -110,87 +104,6 @@ QWERのキーを押すと各キーについて赤青黄緑のサンタが登る�
 名前は７文字まででお願いします．
 </br>
 それ以上指定すると表示が崩れます．
-<!-- <button onclick="toujouBtn(reset)">登場リセット</button> -->
-<h2>ガジェットの状態</h2>
-<table border="1">
-	<tr>
-		<th></th>
-		<th><font color="red">赤1</font></th>
-		<th><font color="red">赤2</font></th>
-		<th><font color="blue">青1</font></th>
-		<th><font color="blue">青2</font></th>
-		<th><font color="green">緑1</font></th>
-		<th><font color="green">緑2</font></th>
-		<th><font color="yellow">黄1</font></th>
-		<th><font color="yellow">黄2</font></th>
-	</tr><tr>
-		<td>gadget</td>
-		<td><input id="red0gadget" size="4" type="text" name="red0gadget"/><button onclick="setGadget('red','0')">set</button></td>
-		<td><input id="red1gadget" size="4" type="text" name="red1gadget"/><button onclick="setGadget('red','1')">set</button></td>
-		<td><input id="blu0gadget" size="4" type="text" name="blu0gadget"/><button onclick="setGadget('bul','0')">set</button></td>
-		<td><input id="blu1gadget" size="4" type="text" name="blu1gadget"/><button onclick="setGadget('bul','1')">set</button></td>
-		<td><input id="gre0gadget" size="4" type="text" name="gre0gadget"/><button onclick="setGadget('gre','0')">set</button></td>
-		<td><input id="gre1gadget" size="4" type="text" name="gre1gadget"/><button onclick="setGadget('gre','1')">set</button></td>
-		<td><input id="yel0gadget" size="4" type="text" name="yel0gadget"/><button onclick="setGadget('yel','0')">set</button></td>
-		<td><input id="yel1gadget" size="4" type="text" name="yel1gadget"/><button onclick="setGadget('yel','1')">set</button></td>
-	</tr><tr>
-		<td>alive<button onclick="checkAlive()">check</button></td>
-		<td id="red0alive"></td>
-		<td id="red1alive"></td>
-		<td id="blu0alive"></td>
-		<td id="blu1alive"></td>
-		<td id="gre0alive"></td>
-		<td id="gre1alive"></td>
-		<td id="yel0alive"></td>
-		<td id="yel1alive"></td>
-	</tr><tr>
-		<td>up<button onclick="clearCount()">clearCount</button></td>
-		<td id="red0up"></td>
-		<td id="red1up"></td>
-		<td id="blu0up"></td>
-		<td id="blu1up"></td>
-		<td id="gre0up"></td>
-		<td id="gre1up"></td>
-		<td id="yel0up"></td>
-		<td id="yel1up"></td>
-	</tr><tr>
-		<td>byebye</td>
-		<td id="red0byebye"></td>
-		<td id="red1byebye"></td>
-		<td id="blu0byebye"></td>
-		<td id="blu1byebye"></td>
-		<td id="gre0byebye"></td>
-		<td id="gre1byebye"></td>
-		<td id="yel0byebye"></td>
-		<td id="yel1byebye"></td>
-	</tr><tr>
-		<td>rotate</td>
-		<td id="red0rotate"></td>
-		<td id="red1rotate"></td>
-		<td id="blu0rotate"></td>
-		<td id="blu1rotate"></td>
-		<td id="gre0rotate"></td>
-		<td id="gre1rotate"></td>
-		<td id="yel0rotate"></td>
-		<td id="yel1rotate"></td>
-	</tr><tr>
-		<td>recv</td>
-		<td id="red0recv"></td>
-		<td id="red1recv"></td>
-		<td id="blu0recv"></td>
-		<td id="blu1recv"></td>
-		<td id="gre0recv"></td>
-		<td id="gre1recv"></td>
-		<td id="yel0recv"></td>
-		<td id="yel1recv"></td>
-	</tr>
-
-</table>
-
-<h2>ガジェットの操作</h2>
-<button onclick="gestureStart()">gestureStart</button>
-<button onclick="gestureStop()">gestureStop</button>
-
 
 </body>
 </html>

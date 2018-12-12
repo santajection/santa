@@ -252,6 +252,10 @@ function ouenBtn() {
   socket.emit('change_scene', { scene: 'ouen' });
 }
 
+function reloadBtn() {
+  socket.emit('change_scene', { scene: 'reload' });
+}
+
 function config() {
   console.log({
     frame_per_signal: $("#config_frame_per_signal").val(),

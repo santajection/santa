@@ -1,5 +1,5 @@
 var DEBUG_LEVEL = 0; // 0: release, 1:debug
-var SERVER = "http://santa-hub.herokuapp.com";
+var SERVER = "http://tanabata-hub.herokuapp.com";
 var useCloud = false;
 
 var SANTA_RED_GADGET = "red";

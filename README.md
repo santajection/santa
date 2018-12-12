@@ -58,9 +58,10 @@ npm start
 
 ## 運営
 ### URL
-`localhost:3000`を設定したhubのURLと読み替える。
 - ゲーム画面: http://localhost:3000
 - 運営画面： http://localhost:3000/unnei
+- 参加者画面：http://<server>:3001/game/1   など。1の部分は運営画面で設定したゲームID．　
+`<server>`を設定したhubのURLと読み替える。
 
 ### ルール
 - 時間は30秒

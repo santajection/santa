@@ -26,13 +26,22 @@ git clone git@github.com:santajection/santa.git
 ```
 
 ### 設定
-[hub](https://github.com/santajection/hub)のURLを`config.default.json`に書き込む。
+[hub](https://github.com/santajection/hub)のURLを`config.default.json`、`public/js/config.js`に書き込む。
 デフォルトではlocalhost:3001(hubの初期値)に設定されている。
-```
+
+```js
+// config.default.json
 {
   "hubserver": "localhost:3001"
 }
 ```
+
+```js
+// public/js/config.js
+var SERVER = "http://localhost:3001";
+```
+
+
 
 ### パッケージインストール
 

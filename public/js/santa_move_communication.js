@@ -94,6 +94,9 @@ socket.on('connect', function () {
       case "santaExit":
         santaExit();
         break;
+      case "reload":
+        location.reload();
+        break;
     }
   })
   .on('initialize', function (msg) {
